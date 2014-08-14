@@ -26,7 +26,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must ends with two \r.
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -34,3 +35,23 @@ Icon
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
+
+arc/Debug/arc.Build.CppClean.log
+arc/Debug/arc.log
+arc-project.opensdf
+arc-project.v12.suo
+arc-project.v12.suo
+arc-project.sdf
+arc-project.sdf
+arc-project.sdf
+*.obj
+*.lastbuildstate
+*.tlog
+*.idb
+*.pdb
+arc/Debug/vc120.pdb
+
+Debug/*
+external/*
+*.ipch
+playground/Debug/*

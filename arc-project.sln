@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "playground", "playground\playground.vcxproj", "{C56F007B-D7B4-42C1-9C0C-5D6A6A03DB30}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arc", "arc\arc.vcxproj", "{3D61AC59-343F-4F35-8224-B78E9AB87AFD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C56F007B-D7B4-42C1-9C0C-5D6A6A03DB30}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C56F007B-D7B4-42C1-9C0C-5D6A6A03DB30}.Debug|Win32.Build.0 = Debug|Win32
+		{C56F007B-D7B4-42C1-9C0C-5D6A6A03DB30}.Release|Win32.ActiveCfg = Release|Win32
+		{C56F007B-D7B4-42C1-9C0C-5D6A6A03DB30}.Release|Win32.Build.0 = Release|Win32
+		{3D61AC59-343F-4F35-8224-B78E9AB87AFD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3D61AC59-343F-4F35-8224-B78E9AB87AFD}.Debug|Win32.Build.0 = Debug|Win32
+		{3D61AC59-343F-4F35-8224-B78E9AB87AFD}.Release|Win32.ActiveCfg = Release|Win32
+		{3D61AC59-343F-4F35-8224-B78E9AB87AFD}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
