@@ -1,3 +1,5 @@
+#if 0
+
 #include "EntitySystem.hpp"
 
 #include "arc/memory/allocator.hpp"
@@ -234,3 +236,5 @@ namespace arc { namespace engine {
 	}
 
 }} // namespace arc::engine
+
+#endif

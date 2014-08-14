@@ -73,9 +73,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="collections\Array.hpp" />
     <ClInclude Include="collections\HashMap.hpp" />
     <ClInclude Include="collections\Slice.hpp" />

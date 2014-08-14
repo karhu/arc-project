@@ -18,7 +18,10 @@
 #include "arc/gl/functions.hpp"
 #include "arc/math/vectors.hpp"
 
-#include "entity/EntitySystem.hpp"
+//#include "entity/EntitySystem.hpp"
+
+
+#include "entity.hpp"
 #include "entity/TransformComponent.hpp"
 #include "entity/SimpleMaterialComponent.hpp"
 
@@ -138,7 +141,6 @@ int main(int argc, char** argv)
 
 	auto& shader_manager = *engine::add_subsystem<engine::ShaderManager>();
 	auto& keyboard = *engine::add_subsystem<input::KeyboardState>();
-	auto& entity_system = *engine::add_subsystem<engine::EntitySystem>();
 
 	engine::initialize_subsystems(sys_config);
 
@@ -183,6 +185,39 @@ int main(int argc, char** argv)
 
 	// entity test /////////////////////////////////////////////////////////////////////
 
+	entity::initialize(sys_config);
+
+	entity::register_component<TransformComponent>(512);
+	entity::register_component<SimpleMaterialComponent>(256);
+
+	auto eh0 = entity::create();
+	auto eh1 = entity::create();
+	auto eh2 = entity::create();
+
+	auto tc0 = entity::add<TransformComponent>(eh0);
+	auto tc2 = entity::add<TransformComponent>(eh2);
+
+	ARC_ASSERT(tc0.valid(), "invalid transform component");
+	ARC_ASSERT(tc2.valid(), "invalid transform component");
+
+	tc0.set_position(vec4(1, 2, 3, 4));
+	tc2.set_scale(vec4(5, 6, 7, 8));
+
+	auto tc1 = entity::get<TransformComponent>(eh1);
+	ARC_ASSERT(!tc1.valid(), "TransformComponent should be invalid");
+
+	tc2 = entity::get<TransformComponent>(eh2);
+	ARC_ASSERT(tc2.valid(), "TransformComponent should be valid");
+
+	auto s = tc2.get_scale();
+	std::cout << "scale: " << s.x << " " << s.y << " " << s.z << " " << s.w << std::endl;
+
+
+
+	entity::finalize();
+
+	/*
+
 	memory::Mallocator entity_alloc;
 	bool ok;
 	ok = entity_system.register_component<TransformComponent>(&entity_alloc, 512);
@@ -207,6 +242,8 @@ int main(int argc, char** argv)
 
 	auto s = tc2.get_scale();
 	std::cout << "scale: " << s.x << " " << s.y << " " << s.z << " " << s.w << std::endl;
+
+	*/
 
 	/////
 
