@@ -122,7 +122,9 @@ void render();
 void draw();
 void draw_v2();
 
-#include "template_util.hpp"
+#include "arc/util/template_util.hpp"
+#include "arc/util/tuple_util.hpp"
+#include "arc/util/ZipIterator.hpp"
 
 struct TestHandler
 {
@@ -226,8 +228,8 @@ int main(int argc, char** argv)
 	int* ptr_ints = n_ints;
 	double* ptr_doubles = n_doubles;
 
-	auto begin = make_old_zip_iterator(n_ints, n_doubles);
-	auto end = make_old_zip_iterator(n_ints + 10, n_doubles + 10);
+//	auto begin = make_old_zip_iterator(n_ints, n_doubles);
+//	auto end = make_old_zip_iterator(n_ints + 10, n_doubles + 10);
 
 
 
@@ -236,7 +238,7 @@ int main(int argc, char** argv)
 	float float_val = 2.5f;
 
 	std::tuple<int*, double*, float*> ptr_tuple = std::make_tuple(&int_val, &double_val, &float_val );
-	std::tuple<int&, double&, float&> ref_tuple = dereference_tuple<int*, double*, float*>(ptr_tuple);
+	std::tuple<int&, double&, float&> ref_tuple = tuple_util::dereference<int*, double*, float*>(ptr_tuple);
 
 	std::get<0>(ref_tuple) += 1;
 	std::get<1>(ref_tuple) += 2;

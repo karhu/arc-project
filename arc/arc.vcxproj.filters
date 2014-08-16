@@ -84,6 +84,15 @@
     <ClInclude Include="util\ManualTypeId.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="util\template_util.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\tuple_util.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\ZipIterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\assert.cpp">

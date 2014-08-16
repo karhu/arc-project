@@ -96,6 +96,9 @@
     <ClInclude Include="string\util.hpp" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="util\ManualTypeId.hpp" />
+    <ClInclude Include="util\template_util.hpp" />
+    <ClInclude Include="util\tuple_util.hpp" />
+    <ClInclude Include="util\ZipIterator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\assert.cpp" />

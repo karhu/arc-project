@@ -47,6 +47,8 @@ public:
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
+
 template <typename ...Types>
 struct parameter_pack
 {
@@ -75,3 +77,5 @@ struct parameter_pack
 		template<> static bool unroll<0>(UserDataT&& user_data) { return true; }
 	};
 };
+
+*/
