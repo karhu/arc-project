@@ -14,6 +14,7 @@ namespace arc
 	{
 	public:
 		Array(memory::Allocator& a, uint32 size = 0);
+		Array();
 		~Array();
 
 		ARC_NO_COPY(Array);
@@ -48,11 +49,16 @@ namespace arc
 		void trim();
 		void clear();
 
+	public:
+		void initialize(memory::Allocator* alloc, uint32 size = 0);
+		void finalize();
+		bool is_initialized();
+
 	protected:
 		void _grow(uint32 minCapacity = 0);
 
 	protected:
-		memory::Allocator* m_allocator;
+		memory::Allocator* m_allocator = nullptr;
 		T*                 m_data = nullptr;
 		uint32             m_size = 0;
 		uint32             m_capacity = 0;
@@ -75,9 +81,6 @@ namespace arc
 	template<typename T> inline
 	Array<T>::~Array()
 	{
-		// delete data
-		memory::util::delete_elements<T>(m_data, m_size);
-		// free memory
-		m_allocator->free(m_data);
+		finalize();
 	}
 }

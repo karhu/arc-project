@@ -59,6 +59,40 @@ namespace arc
 	}
 
 	template<typename T> inline
+	void Array<T>::initialize(memory::Allocator* alloc, uint32 size)
+	{
+		if (is_initialized())
+		{ 
+			clear();
+			m_allocator->free(m_data);
+			m_capacity = m_size = 0;
+			m_data = nullptr;
+		}
+
+		m_allocator = alloc;
+		resize(size);
+	}
+
+	template<typename T> inline
+	void Array<T>::finalize()
+	{
+		if (is_initialized())
+		{
+			clear();
+			m_allocator->free(m_data);
+			m_capacity = m_size = 0;
+			m_data = nullptr;
+			m_allocator = nullptr;
+		}
+	}
+
+	template<typename T> inline
+	bool Array<T>::is_initialized()
+	{
+		return m_allocator != nullptr;
+	}
+
+	template<typename T> inline
 	void Array<T>::trim()
 	{
 		if (m_capacity > m_size)
@@ -133,6 +167,9 @@ namespace arc
 	{
 		resize(size);
 	}
+
+	template<typename T> inline
+	Array<T>::Array() {}
 
 	template<typename T> inline
 	void Array<T>::push_back(const T& value)

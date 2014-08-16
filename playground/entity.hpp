@@ -11,6 +11,7 @@ namespace arc { namespace entity {
 		using ComponentType  = uint8;
 
 		const uint32 INVALID_ENTITY_INDEX = std::numeric_limits<uint32>::max();
+		const uint32 INVALID_COMPONENT_INDEX = std::numeric_limits<uint32>::max();
 
 		struct Handle
 		{
@@ -56,7 +57,11 @@ namespace arc { namespace entity {
 	uint32 _get_component(uint32 entity_index, ComponentType type);
 	bool   _has_component(uint32 entity_index, ComponentType type);
 	uint32 _add_component(uint32 entity_index, ComponentType type, uint32 component_index);
-	
+	bool   _remove_component_later(Handle h, ComponentType type);
+
+/*	using RemovalCallback = void *(fun)()
+
+	void   _register_component_type(ComponentType type, RemovalCallback rm_cb);*/
 
 	struct ComponentTypeContext
 	{
@@ -77,7 +82,7 @@ namespace arc { namespace entity {
 		ARC_ASSERT(is_initialized(), "Entity system is not initialized.");
 
 		auto& alloc = engine::longterm_allocator();
-		bool ok = T::Initialize(&alloc, max_count);
+		bool ok = T::Backend::Initialize(&alloc, max_count);
 
 		if (ok)
 		{
@@ -96,7 +101,7 @@ namespace arc { namespace entity {
 
 		auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
 		auto component_index = _get_component(_index(h), type_id);
-		return T::Get(component_index);
+		return T::Backend::Get(component_index);
 	}
 
 	template<typename T>
@@ -120,10 +125,10 @@ namespace arc { namespace entity {
 		if (_has_component(_index(h), type_id)) return {};
 
 		// create the component
-		uint32 component_index = T::Create(_index(h));
+		uint32 component_index = T::Backend::Create(_index(h));
 		_add_component(_index(h), type_id, component_index);
 
-		return T::Get(component_index);
+		return T::Backend::Get(component_index);
 	}
 
 	template<typename T>
@@ -137,18 +142,147 @@ namespace arc { namespace entity {
 		// get the component
 		uint32 component_index = _get_component(_index(h), type_id);
 
-		if (component_index == INVALID_COMPONENT_INDEX) return false;
-
-		T::Schedule_Removal(component_index);
-
-		return true;
+		return _remove_component_later(h, type_id);
 	}
 
 }} // namespace arc::entity
 
-/*
+
+#include <boost/iterator/iterator_facade.hpp>
+
+template <typename T1, typename T2>
+struct OldZipIteratorHelper 
+{
+	using ValueT = std::tuple<typename std::iterator_traits<T1>::value_type, typename std::iterator_traits<T2>::value_type>;
+	using RefT   = std::tuple<typename std::iterator_traits<T1>::value_type&, typename std::iterator_traits<T2>::value_type&>;
+};
+
+template<typename T1, typename T2>
+class OldZipIterator 
+	: public boost::iterator_facade< OldZipIterator<T1,T2>,
+									 typename OldZipIteratorHelper<T1, T2>::ValueT,
+									 boost::random_access_traversal_tag,
+									 typename OldZipIteratorHelper<T1, T2>::RefT >
+{
+public:
+	using RefType = typename OldZipIteratorHelper<T1, T2>::RefT;
+	using ThisType = typename OldZipIterator<T1, T2>;
+public:
+	OldZipIterator() {}
+	OldZipIterator(T1 p1, T2 p2) : m_p1(p1), m_p2(p2) {}
+public:
+	RefType dereference() { return RefType(*m_p1, *m_p2); }
+	const RefType dereference() const { return RefType(*m_p1, *m_p2); }
+	bool equal(const ThisType& other) const { return m_p1 == other.m_p1; }
+	void increment() { ++m_p1; ++m_p2; }
+	void decrement() { --m_p1; --m_p2; }
+	void advance(ptrdiff_t n) { m_p1 += n; m_p2 += n; }
+	ptrdiff_t distance_to(const ThisType& other) const { return other.m_p1 - m_p1; }
+private:
+	T1 m_p1;
+	T2 m_p2;
+};
+
+template<typename T1, typename T2> inline
+OldZipIterator<T1, T2> make_old_zip_iterator(T1 iter1, T2 iter2)
+{
+	return { iter1, iter2 };
+}
+
 #include "template_util.hpp"
 
+template<typename ...Types>
+struct dereference_tuple_impl
+{
+	using Indices =  typename make_indices<Types...>::type;
+
+	template<unsigned... I> static
+	auto eval2(index_tuple<I...>, std::tuple<Types...>& t)
+		-> decltype(std::tie(*std::get<I>(t)...))
+	{
+		return std::tie(*std::get<I>(t)...);
+	}
+
+	static auto eval(std::tuple<Types...>& t)
+		-> decltype(eval2(Indices(), t))
+	{
+		return eval2(Indices(), t);
+	}
+};
+
+template<typename ...Types>
+auto dereference_tuple(std::tuple<Types...>& t)
+	-> decltype(dereference_tuple_impl<Types...>::eval(t))
+{
+	return dereference_tuple_impl<Types...>::eval(t);
+}
+
+template<typename ...Types>
+auto dereference_tuple(const std::tuple<Types...>& t)
+-> decltype(dereference_tuple_impl<Types...>::eval((std::tuple<Types...>&)t))
+{
+	return dereference_tuple_impl<Types...>::eval((std::tuple<Types...>&)t);
+}
+
+template <typename ...Types>
+struct ZipIteratorHelper
+{
+	using ValueT = std::tuple<typename std::iterator_traits<Types>::value_type...>;
+	using RefT = std::tuple<typename std::iterator_traits<Types>::value_type&...>;
+};
+
+struct pass { template<typename ...T> pass(T...) {} };
+
+template <typename ...Types>
+struct ZipIterator
+	: public boost::iterator_facade< ZipIterator<Types...>,
+									 typename ZipIteratorHelper<Types...>::ValueT,
+									 boost::random_access_traversal_tag,
+									 typename ZipIteratorHelper<Types...>::RefT >
+{
+public:
+	using RefT = typename ZipIteratorHelper<Types...>::RefT;
+	using ThisT = typename ZipIterator<Types...>;
+	using Indices = typename make_indices<Types...>::type;
+public:
+	ZipIterator() {}
+	ZipIterator(Types&& ...args) :m_iterators(std::make_tuple(std::forward<Types>(args)...)) {}
+private:
+	template<uint32_t ...I>
+	void _increment(index_tuple<I...> it) { pass{ ++std::get<I>(m_iterators)... }; }
+	template<uint32_t ...I>
+	void _decrement(index_tuple<I...> it) { pass{ --std::get<I>(m_iterators)... }; }
+	
+	template<typename T>
+	int _advance_fun(T& iter, ptrdiff_t n) { iter += n; return 0; }
+
+	template<uint32_t ...I>
+	void _advance(index_tuple<I...> it, ptrdiff_t n) { pass( _advance_fun(std::get<I>(m_iterators), n)... ); }
+
+private:
+	RefT dereference() { return dereference_tuple<Types...>(m_iterators); }
+	const RefT dereference() const { return dereference_tuple<Types...>(m_iterators); }
+
+	void increment() { _increment(Indices()); }
+	void decrement() { _decrement(Indices()); }
+	void advance(ptrdiff_t n) { _advance(Indices(),n); }
+
+	bool equal(const ThisT& other) const { return std::get<0>(m_iterators) == std::get<0>(other.m_iterators); }
+
+	ptrdiff_t distance_to(const ThisT& other) const { return std::get<0>(other.m_iterators) - std::get<0>(m_iterators); }
+private:
+	std::tuple<Types...> m_iterators;
+private:
+	friend class boost::iterator_core_access;
+};
+
+template<typename ...Types> inline
+ZipIterator<Types...> make_zip_iterator(Types ...args)
+{
+	return ZipIterator<Types...>(std::forward<Types>(args)...);
+}
+
+/*
 template<typename ...Types>
 class StructOfArrays
 {

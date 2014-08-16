@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <algorithm>
 
 
 #include "arc/core.hpp"
@@ -26,6 +27,8 @@
 #include "entity/SimpleMaterialComponent.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <boost/iterator/zip_iterator.hpp>
 
 using namespace arc;
 
@@ -212,9 +215,44 @@ int main(int argc, char** argv)
 	auto s = tc2.get_scale();
 	std::cout << "scale: " << s.x << " " << s.y << " " << s.z << " " << s.w << std::endl;
 
-
+	//entity::remove<TransformComponent>(eh0);
 
 	entity::finalize();
+
+	const int N = 10;
+	int n_ints[N] { 5, 4, 3, 1, 5, 8, 9, 2, 6, 7 };
+	double n_doubles[N] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+	int* ptr_ints = n_ints;
+	double* ptr_doubles = n_doubles;
+
+	auto begin = make_old_zip_iterator(n_ints, n_doubles);
+	auto end = make_old_zip_iterator(n_ints + 10, n_doubles + 10);
+
+
+
+	int int_val = 1;
+	double double_val = 1.5;
+	float float_val = 2.5f;
+
+	std::tuple<int*, double*, float*> ptr_tuple = std::make_tuple(&int_val, &double_val, &float_val );
+	std::tuple<int&, double&, float&> ref_tuple = dereference_tuple<int*, double*, float*>(ptr_tuple);
+
+	std::get<0>(ref_tuple) += 1;
+	std::get<1>(ref_tuple) += 2;
+	std::get<2>(ref_tuple) += 3;
+
+	std::cout << int_val << " " << double_val << " " << float_val << std::endl;
+
+	auto begin2 = make_zip_iterator(ptr_ints, ptr_doubles);
+	auto end2 = make_zip_iterator(ptr_ints + 10, ptr_doubles + 10);
+
+	std::sort(begin2, end2);
+
+	for (uint32 i = 0; i < N; i++)
+	{
+		std::cout << n_ints[i] << " : " << n_doubles[i] << std::endl;
+	}
 
 	/*
 

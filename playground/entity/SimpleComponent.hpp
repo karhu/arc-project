@@ -4,8 +4,8 @@
 
 namespace arc
 {
-	template<typename ComponentT, typename DataT>
-	class SimpleComponent
+	template < typename ComponentT, typename DataT >
+	class SimpleComponentBackend
 	{
 	public:
 		static typename ComponentT Get(uint32 index);
@@ -16,20 +16,26 @@ namespace arc
 		static bool Initialize(memory::Allocator* alloc, uint32 count);
 		static uint32 Create(uint32 entity_index);
 		static void   Return(uint32 component_index);
-	protected:
+	public:
 		static DataT*  s_component_data;
 		static uint32*  s_entity_index_data;
 		static uint32 s_maximum_count;
 		static uint32 s_active_count;
 		static memory::Allocator* s_alloc;
+	};
+
+	template<typename ComponentT, typename DataT>
+	class SimpleComponent
+	{
+	public:
+		using Backend = SimpleComponentBackend < ComponentT, DataT > ;
 	public:
 		bool valid() { return m_index != engine::INVALID_COMPONENT_INDEX; }
 	protected:
 		DataT* data();
-	protected:
 		uint32 m_index = engine::INVALID_COMPONENT_INDEX; // index into the component array
 	private:
-		friend class EntityHandle;
+		friend class Backend;
 	};
 
 	// implementation ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,11 +44,11 @@ namespace arc
 	DataT* SimpleComponent<ComponentT, DataT>::data()
 	{
 		ARC_ASSERT(valid(), "Trying to access invalid Component");
-		return s_component_data + m_index;
+		return Backend::s_component_data + m_index;
 	}
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ typename ComponentT SimpleComponent<ComponentT, DataT>::Get(uint32 index)
+	/*static*/ typename ComponentT SimpleComponentBackend<ComponentT, DataT>::Get(uint32 index)
 	{
 		if (index >= s_active_count) index = engine::INVALID_COMPONENT_INDEX;
 		ComponentT comp;
@@ -51,22 +57,22 @@ namespace arc
 	}
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ uint32 SimpleComponent<ComponentT, DataT>::s_maximum_count = 0;
+	/*static*/ uint32 SimpleComponentBackend<ComponentT, DataT>::s_maximum_count = 0;
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ uint32 SimpleComponent<ComponentT, DataT>::s_active_count = 0;
+	/*static*/ uint32 SimpleComponentBackend<ComponentT, DataT>::s_active_count = 0;
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ memory::Allocator* SimpleComponent<ComponentT, DataT>::s_alloc = nullptr;
+	/*static*/ memory::Allocator* SimpleComponentBackend<ComponentT, DataT>::s_alloc = nullptr;
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ DataT* SimpleComponent<ComponentT, DataT>::s_component_data = nullptr;
+	/*static*/ DataT* SimpleComponentBackend<ComponentT, DataT>::s_component_data = nullptr;
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ uint32* SimpleComponent<ComponentT, DataT>::s_entity_index_data = nullptr;
+	/*static*/ uint32* SimpleComponentBackend<ComponentT, DataT>::s_entity_index_data = nullptr;
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ uint32 SimpleComponent<ComponentT, DataT>::Create(uint32 entity_index)
+	/*static*/ uint32 SimpleComponentBackend<ComponentT, DataT>::Create(uint32 entity_index)
 	{
 		if (s_active_count >= s_maximum_count) return engine::INVALID_COMPONENT_INDEX;
 
@@ -80,7 +86,7 @@ namespace arc
 	}
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ void SimpleComponent<ComponentT, DataT>::Return(uint32 component_index)
+	/*static*/ void SimpleComponentBackend<ComponentT, DataT>::Return(uint32 component_index)
 	{
 		ARC_ASSERT(component_index < s_active_count, "Index out of bounds.");
 
@@ -95,7 +101,7 @@ namespace arc
 	}
 
 	template<typename ComponentT, typename DataT>
-	/*static*/ bool SimpleComponent<ComponentT, DataT>::Initialize(memory::Allocator* alloc, uint32 count)
+	/*static*/ bool SimpleComponentBackend<ComponentT, DataT>::Initialize(memory::Allocator* alloc, uint32 count)
 	{
 		if (s_entity_index_data != nullptr) return false; // already initialized
 

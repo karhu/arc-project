@@ -58,6 +58,14 @@ public:
     void  free(void* data) override;
 };
 
+class DummyAllocator final : public Allocator
+{
+	void* allocate(uint64 size, uint32 align = 4) override;
+	void  free(void* data) override;
+};
+
+extern DummyAllocator g_dummy_allocator;
+
 
 }} // namespaces
 

@@ -1,7 +1,7 @@
 #include "allocator.hpp"
 
+#include "arc/core.hpp"
 #include "arc/logging/log.hpp"
-
 #include "arc/core/numeric_types.hpp"
 
 #include <cstdlib>
@@ -13,9 +13,10 @@ struct malloc_log
 	static int priority() { return arc::log::PRIORITY_CRITICAL;  }
 };
 
-namespace arc {
-namespace memory
-{
+namespace arc { namespace memory {
+
+	DummyAllocator g_dummy_allocator;
+
     void* Mallocator::allocate(uint64 size, uint32 align)
     {
         //TODO handle alignment
@@ -30,5 +31,16 @@ namespace memory
 		LOG_DEBUG(malloc_log, "free(", data, ")");
         std::free(data);
     }
+
+	void* DummyAllocator::allocate(uint64 size, uint32 align)
+	{
+		ARC_ASSERT(size == 0, "trying to allocate memory with dummy allocator");
+		return nullptr;
+	}
+
+	void DummyAllocator::free(void *data)
+	{
+		ARC_ASSERT(data == nullptr, "trying to free memory with dummy allocator");
+	}
 
 }} //namespaces

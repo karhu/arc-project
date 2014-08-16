@@ -2,6 +2,7 @@
 
 #include "arc/memory/Allocator.hpp"
 #include "engine.hpp"
+#include "arc/collections/Array.inl"
 
 namespace arc { namespace entity {
 
@@ -31,7 +32,12 @@ namespace arc { namespace entity {
 			} free_data;
 		};
 
-		const uint32 INVALID_COMPONENT_INDEX = std::numeric_limits<uint32>::max();
+		struct ComponentRemovalCommand
+		{
+			uint32 index;
+			ComponentType type;
+		};
+
 		const uint32 INVALID_ENTITY_FREELIST_LINK = std::numeric_limits<uint32>::max();
 
 		// globals //////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +48,8 @@ namespace arc { namespace entity {
 		uint32					g_first_free = INVALID_ENTITY_FREELIST_LINK;
 		uint32					g_last_free = INVALID_ENTITY_FREELIST_LINK;
 		memory::Allocator*		g_entity_alloc = nullptr;
+
+		arc::Array<ComponentRemovalCommand> g_comp_remove_data;
 
 		// helper functions /////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +93,21 @@ namespace arc { namespace entity {
 			return true;
 		}
 
+		bool   _remove_component_later(Handle h, ComponentType type)
+		{
+			uint32 entity_index = _index(h);
+
+			// it the entity has the requested component
+			if (_has_component(entity_index, type))
+			{
+				g_comp_remove_data.push_back({ entity_index, type });
+				return true;
+			}
+
+			// component not present
+			return false;
+		}
+
 		// function implementations /////////////////////////////////////////////////////////////////
 
 		Handle::Handle(uint32 index) : m_index(index) {}
@@ -111,6 +134,10 @@ namespace arc { namespace entity {
 			g_entity_data[max_entities - 1].free_data.next = INVALID_ENTITY_FREELIST_LINK;
 			g_first_free = 0;
 
+			// init entity removal data
+			g_comp_remove_data.initialize(&engine::longterm_allocator());
+			g_comp_remove_data.reserve(128);
+
 			return true;
 		}
 
@@ -127,6 +154,8 @@ namespace arc { namespace entity {
 			g_entity_alloc = nullptr;
 			g_first_free = INVALID_ENTITY_FREELIST_LINK;
 			g_last_free = INVALID_ENTITY_FREELIST_LINK;
+
+			g_comp_remove_data.finalize();
 
 			return true;
 		}
