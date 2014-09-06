@@ -12,7 +12,12 @@ namespace arc
 		vec4 orientation;
 	};
 
-	class TransformComponent : public SimpleComponent < TransformComponent, TransformData >
+	struct TransformComponentCallbacks { static void Register() {}; };
+
+	class TransformComponent : public SimpleComponent < 
+		TransformComponent, 
+		TransformData,
+		TransformComponentCallbacks>
 	{
 	public:
 		vec4 get_position()    { return data()->position; }
@@ -22,6 +27,13 @@ namespace arc
 		void set_position(vec4 position)    { data()->position = position; }
 		void set_orientation(vec4 position) { data()->orientation = position; }
 		void set_scale(vec4 position)       { data()->scale = position; }
+	};
+
+	struct RenderData
+	{
+		uint16 material_id;
+		uint16 material_instance_id;
+		uint32 geometry_id;
 	};
 
 } // namespace arc

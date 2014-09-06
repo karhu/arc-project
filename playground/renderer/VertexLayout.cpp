@@ -1,7 +1,5 @@
-#if 0
-#include "GeometryManager.hpp"
 
-#include "arc/gl/types.hpp"
+#include "VertexLayout.hpp"
 
 namespace arc { namespace renderer {
 
@@ -72,6 +70,3 @@ namespace arc { namespace renderer {
 	}
 
 }} // namespace arc::renderer
-
-
-#endif

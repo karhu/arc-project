@@ -3,6 +3,7 @@
 #include "arc/core.hpp"
 #include "arc/lua/State.hpp"
 #include "arc/util/ManualTypeId.hpp"
+#include "arc/collections/Slice.hpp"
 
 // public interface ///////////////////////////////////////////
 namespace arc { namespace entity {
@@ -47,21 +48,45 @@ namespace arc { namespace entity {
 		template<typename T>
 		bool remove(Handle h);
 
+		// update functions
+
+		void update_component_removal();
+
 }} // namespace arc::entity
 
+// callback functionality /////////////////////////////////////////
+
+namespace arc { namespace entity {
+
+	using CallbackFunction = void(*)();
+
+	enum class CallbackType : uint16
+	{
+		Update = 0,
+		RenderPre,
+		RenderMain,
+		RenderPost,
+		COUNT,
+	};
+
+	void register_callback(CallbackType type, float priority, CallbackFunction function);
+	void call_callbacks(CallbackType type);
+
+}}
 
 // implementation utils ///////////////////////////////////////////
 namespace arc { namespace entity {
+
+	using _ComponentRemovalCallback = void(*)(Slice<uint32> component_indices);
 
 	uint32 _index(Handle h);
 	uint32 _get_component(uint32 entity_index, ComponentType type);
 	bool   _has_component(uint32 entity_index, ComponentType type);
 	uint32 _add_component(uint32 entity_index, ComponentType type, uint32 component_index);
 	bool   _remove_component_later(Handle h, ComponentType type);
-
-/*	using RemovalCallback = void *(fun)()
-
-	void   _register_component_type(ComponentType type, RemovalCallback rm_cb);*/
+	bool   _register_component_removal_callback(ComponentType type, _ComponentRemovalCallback rm_cb);
+	bool   _component_index_changed(uint32 entity_index, ComponentType type, uint32 new_component_index);
+	bool   _unlink_component_from_entity(uint32 entity_index, ComponentType type);
 
 	struct ComponentTypeContext
 	{
@@ -87,6 +112,10 @@ namespace arc { namespace entity {
 		if (ok)
 		{
 			ManualTypeId<ComponentTypeContext, T>::Initialize();
+			auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
+			_register_component_removal_callback(type_id, &T::Backend::RemovalCallback);
+
+			T::Backend::RegisterCallbacks();
 			return true;
 		}
 
@@ -138,9 +167,6 @@ namespace arc { namespace entity {
 		ARC_ASSERT(valid(h), "Trying to use invalid EntityHandle.");
 
 		auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
-
-		// get the component
-		uint32 component_index = _get_component(_index(h), type_id);
 
 		return _remove_component_later(h, type_id);
 	}

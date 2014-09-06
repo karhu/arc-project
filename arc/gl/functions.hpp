@@ -29,7 +29,7 @@ inline void unmap_buffer(BufferType target)
     ARC_GL_CHECK_FOR_ERRORS();
 }
 
-inline void create_buffers(uint32 n, uint32* buffers)
+inline void gen_buffers(uint32 n, uint32* buffers)
 {
     ARC_GL_CLEAR_ERRORS();
     glGenBuffers(n,buffers);
@@ -85,7 +85,7 @@ inline void clear(ClearBufferBits buffers)
 // vertex array objects (VAO)                                //
 ///////////////////////////////////////////////////////////////
 
-inline void create_vertex_arrays(uint32 n, uint32* buffer)
+inline void gen_vertex_arrays(uint32 n, uint32* buffer)
 {
     ARC_GL_CLEAR_ERRORS();
     glGenVertexArrays(n,buffer);

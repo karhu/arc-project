@@ -30,7 +30,12 @@ public:
     {
         void* ptr = allocate(n*sizeof(T),alignof(T));
         // inplace constructor
-        return new (ptr) T(std::forward<Args>(args)...); // TODO this is wrong, we need to init multiple elements!
+		for (uint64 i = 0; i < n; i++)
+		{
+			void* p = (T*)ptr + i;
+			new (p)T(std::forward<Args>(args)...);
+		}
+		return (T*)ptr;
     }
 
     template <typename T> inline

@@ -75,7 +75,9 @@
   <ItemGroup>
     <ClInclude Include="collections\Array.hpp" />
     <ClInclude Include="collections\HashMap.hpp" />
+    <ClInclude Include="collections\Queue.hpp" />
     <ClInclude Include="collections\Slice.hpp" />
+    <ClInclude Include="common.hpp" />
     <ClInclude Include="core.hpp" />
     <ClInclude Include="core\assert.hpp" />
     <ClInclude Include="core\compatibility.hpp" />
@@ -89,12 +91,15 @@
     <ClInclude Include="lua\State.hpp" />
     <ClInclude Include="math\vectors.hpp" />
     <ClInclude Include="memory\Allocator.hpp" />
+    <ClInclude Include="memory\LinearAllocator.hpp" />
     <ClInclude Include="memory\util.hpp" />
     <ClInclude Include="string\all.hpp" />
     <ClInclude Include="string\String.hpp" />
     <ClInclude Include="string\StringView.hpp" />
     <ClInclude Include="string\util.hpp" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="util\Counter.hpp" />
+    <ClInclude Include="util\IndexPool.hpp" />
     <ClInclude Include="util\ManualTypeId.hpp" />
     <ClInclude Include="util\template_util.hpp" />
     <ClInclude Include="util\tuple_util.hpp" />
@@ -106,13 +111,16 @@
     <ClCompile Include="logging\log.cpp" />
     <ClCompile Include="lua\State.cpp" />
     <ClCompile Include="memory\Allocator.cpp" />
+    <ClCompile Include="memory\LinearAllocator.cpp" />
     <ClCompile Include="string\String.cpp" />
     <ClCompile Include="string\StringView.cpp" />
     <ClCompile Include="string\util.cpp" />
+    <ClCompile Include="util\IndexPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="collections\Array.inl" />
     <None Include="collections\HashMap.inl" />
+    <None Include="collections\Queue.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

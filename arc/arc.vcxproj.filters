@@ -93,6 +93,21 @@
     <ClInclude Include="util\ZipIterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="collections\Queue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\IndexPool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\Counter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\LinearAllocator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\assert.cpp">
@@ -119,12 +134,21 @@
     <ClCompile Include="logging\log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="util\IndexPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="memory\LinearAllocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="collections\Array.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="collections\HashMap.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="collections\Queue.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

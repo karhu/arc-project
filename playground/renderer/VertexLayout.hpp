@@ -1,16 +1,19 @@
-#if 0
 #pragma once
 
-#include "arc/core.hpp"
+#include "arc/common.hpp"
 #include "arc/hash/StringHash.hpp"
 
 #include "arc/gl/types.hpp"
 
-#include "renderer.hpp"
-
 namespace arc { namespace renderer {
 
-
+	enum class IndexType : uint8
+	{
+		Undefined = 0,
+		Uint8 = 1,
+		Uint16 = 2,
+		Uint32 = 4
+	};
 
 	struct VertexAttribute
 	{
@@ -41,10 +44,6 @@ namespace arc { namespace renderer {
 		uint8 m_offset;
 	};
 
-	gl::IndexType type_gl(IndexType t);
-	uint32 type_gl(VertexAttribute::Type t);
-	bool type_normalize(VertexAttribute::Type t);
-
 	struct VertexLayout
 	{
 	public:
@@ -62,7 +61,13 @@ namespace arc { namespace renderer {
 		uint8 m_stride = 0;
 	};
 
-	struct MeshData
+
+	gl::IndexType type_gl(IndexType t);
+	uint32 type_gl(VertexAttribute::Type t);
+	bool type_normalize(VertexAttribute::Type t);
+
+	// DEPRECATED
+	struct MeshDataOld
 	{
 		uint32 vertex_count;
 		uint32 index_count;
@@ -75,12 +80,4 @@ namespace arc { namespace renderer {
 		VertexLayout* vertex_layout = nullptr;
 	};
 
-	struct DrawData
-	{
-		uint32 instance_count;
-		uint32 instance_offset;
-	};
-
-}} // namespace arc::renderer
-
-#endif
+}}

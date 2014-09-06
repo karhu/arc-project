@@ -19,9 +19,6 @@
 #include "arc/gl/functions.hpp"
 #include "arc/math/vectors.hpp"
 
-//#include "entity/EntitySystem.hpp"
-
-
 #include "entity.hpp"
 #include "entity/TransformComponent.hpp"
 #include "entity/SimpleMaterialComponent.hpp"
@@ -29,6 +26,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <boost/iterator/zip_iterator.hpp>
+
+#include "arc/memory/util.hpp"
+
+#include "renderer/mesh.hpp"
 
 using namespace arc;
 
@@ -47,11 +48,12 @@ struct DefaultVertexData
 	vec3   normal;
 	vec4u8 color;
 
-	static VertexLayout& Layout();
-};
+	static renderer::VertexLayout& Layout();
+}; 
 
-VertexLayout& DefaultVertexData::Layout()
+renderer::VertexLayout& DefaultVertexData::Layout()
 {
+	using namespace arc::renderer;
 	using Type = VertexAttribute::Type;
 	static VertexAttribute attributes[] = {
 		{ SH("position"),     Type::float32,  3, offsetof(DefaultVertexData, position) },
@@ -93,7 +95,7 @@ struct
 	uint32 vb_size;
 	uint32 vao_id;
 	uint32 shader_id;
-	MeshData mesh_data[MESH_COUNT];
+	renderer::MeshDataOld mesh_data[MESH_COUNT];
 
 	// draw indirect buffer
 	uint32 dib_id; 
@@ -136,6 +138,19 @@ int main(int argc, char** argv)
 {
 	std::cout << "<begin>" << std::endl;
 
+	uint32 r0 = 0;
+	uint32 r1 = 245;
+	uint32 a0 = 16;
+	uint32 a1 = 1;
+
+	uint8 r2 = 245;
+	uint8 a2 = 16;
+
+	std::cout << memory::util::forward_align(r0, a0) << std::endl;
+	std::cout << memory::util::forward_align(r1, a0) << std::endl;
+	std::cout << memory::util::forward_align(r1, a1) << std::endl;
+	std::cout << (uint32)memory::util::forward_align(r2, a2) << std::endl;
+
 	arc::log::DefaultLogger default_logger;
 	arc::log::set_logger(default_logger);
 
@@ -177,6 +192,7 @@ int main(int argc, char** argv)
 
 	using namespace arc::input;
 
+
 	while (counter > 0 && !stop)
 	{
 		engine::deprecated_update();
@@ -194,6 +210,7 @@ int main(int argc, char** argv)
 
 	entity::register_component<TransformComponent>(512);
 	entity::register_component<SimpleMaterialComponent>(256);
+	entity::register_component<SimpleRenderComponent>(512);
 
 	auto eh0 = entity::create();
 	auto eh1 = entity::create();
@@ -201,6 +218,9 @@ int main(int argc, char** argv)
 
 	auto tc0 = entity::add<TransformComponent>(eh0);
 	auto tc2 = entity::add<TransformComponent>(eh2);
+
+	auto rc0 = entity::add<SimpleRenderComponent>(eh0);
+	auto rc2 = entity::add<SimpleRenderComponent>(eh2);
 
 	ARC_ASSERT(tc0.valid(), "invalid transform component");
 	ARC_ASSERT(tc2.valid(), "invalid transform component");
@@ -217,7 +237,16 @@ int main(int argc, char** argv)
 	auto s = tc2.get_scale();
 	std::cout << "scale: " << s.x << " " << s.y << " " << s.z << " " << s.w << std::endl;
 
-	//entity::remove<TransformComponent>(eh0);
+	entity::remove<TransformComponent>(eh0);
+	
+	entity::update_component_removal();
+
+	tc0 = entity::get<TransformComponent>(eh0);
+
+	ARC_ASSERT(!tc0.valid(), "TransformComponent should be invalid");
+
+	entity::call_callbacks(entity::CallbackType::RenderMain);
+	entity::call_callbacks(entity::CallbackType::RenderMain);
 
 	entity::finalize();
 
@@ -230,8 +259,6 @@ int main(int argc, char** argv)
 
 //	auto begin = make_old_zip_iterator(n_ints, n_doubles);
 //	auto end = make_old_zip_iterator(n_ints + 10, n_doubles + 10);
-
-
 
 	int int_val = 1;
 	double double_val = 1.5;
@@ -343,6 +370,10 @@ void render()
 	//glDisable(GL_DEPTH_TEST);
 	//glDisable(GL_CULL_FACE);
 
+	int32 glv;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &glv);
+	std::cout << "GL_MAX_VERTEX_ATTRIBS : " << glv << std::endl;
+
 	draw_v2();
 
 	engine::deprecated_swap();
@@ -355,7 +386,7 @@ void allocate_gpu_buffers()
 	g_state.vb_size = vertex_size + index_size;
 
 	auto target = gl::BufferType::Array;
-	gl::create_buffers(1, &g_state.vb_id);
+	gl::gen_buffers(1, &g_state.vb_id);
 	gl::bind_buffer(target, g_state.vb_id);
 	gl::buffer_data(target, g_state.vb_size, gl::BufferUsage::StaticDraw);
 
@@ -363,7 +394,7 @@ void allocate_gpu_buffers()
 	// Draw Indirect Buffer ///////////////////////////////////////////////////
 
 	target = gl::BufferType::DrawIndirect;
-	gl::create_buffers(1, &g_state.dib_id);
+	gl::gen_buffers(1, &g_state.dib_id);
 	gl::bind_buffer(target, g_state.dib_id);
 
 	uint32 draw_commands_size = MAX_DRAW_COMMANDS*sizeof(gl::DrawElementsIndirectCommand);
@@ -383,7 +414,7 @@ void allocate_gpu_buffers()
 	// model matrix uniform buffer /////////////////////////////////////////////
 
 	target = gl::BufferType::Uniform;
-	gl::create_buffers(1, &g_state.ub_model_id);
+	gl::gen_buffers(1, &g_state.ub_model_id);
 	gl::bind_buffer(target, g_state.ub_model_id);
 
 	uint32 mm_buffer_size = sizeof(float) * 16 * 1024 * 16;
@@ -403,7 +434,7 @@ void allocate_gpu_buffers()
 	// camera info uniform buffer //////////////////////////////////////////////
 
 	target = gl::BufferType::Uniform;
-	gl::create_buffers(1, &g_state.ub_view_id);
+	gl::gen_buffers(1, &g_state.ub_view_id);
 	gl::bind_buffer(target, g_state.ub_view_id);
 
 	gl::buffer_storage(target, 3*sizeof(ViewData), 0,
@@ -427,13 +458,13 @@ uint32 forward_to_alignment(uint32 begin, uint32 alignment)
 	else return begin + alignment - mod;
 }
 
-uint32 index_stride(IndexType type)
+uint32 index_stride(renderer::IndexType type)
 {
 	switch (type)
 	{
-	case IndexType::Uint8: return 1;
-	case IndexType::Uint16: return 2;
-	case IndexType::Uint32: return 4;
+	case renderer::IndexType::Uint8: return 1;
+	case renderer::IndexType::Uint16: return 2;
+	case renderer::IndexType::Uint32: return 4;
 	}
 	ARC_ASSERT(false, "Invalid IndexType");
 	return 4;
@@ -449,13 +480,13 @@ bool upload_geometry_data()
 	// square
 	mesh_data[0].index_count = 6;
 	mesh_data[0].vertex_count = 4;
-	mesh_data[0].index_type = IndexType::Uint16;
+	mesh_data[0].index_type = renderer::IndexType::Uint16;
 	mesh_data[0].vertex_layout = &DefaultVertexData::Layout();
 
 	// diamond
 	mesh_data[1].index_count = 12;
 	mesh_data[1].vertex_count = 5;
-	mesh_data[1].index_type = IndexType::Uint16;
+	mesh_data[1].index_type = renderer::IndexType::Uint16;
 	mesh_data[1].vertex_layout = &DefaultVertexData::Layout();
 
 	uint32 next_free = 0;
@@ -484,7 +515,7 @@ bool upload_geometry_data()
 		ptr = gl::map_buffer_range(target, begin, end - begin,
 			gl::BufferAccess::Write | gl::BufferAccess::InvalidateRange);
 		if (ptr == nullptr) return false;
-		if (mesh.index_type != IndexType::Uint16) return false;
+		if (mesh.index_type != renderer::IndexType::Uint16) return false;
 		
 		id_ptr = (uint16*)ptr;
 		id_ptr[0] = 0; id_ptr[1] = 1; id_ptr[2] = 2;
@@ -530,7 +561,7 @@ bool upload_geometry_data()
 		ptr = gl::map_buffer_range(target, begin, end - begin,
 			gl::BufferAccess::Write | gl::BufferAccess::InvalidateRange);
 		if (ptr == nullptr) return false;
-		if (mesh.index_type != IndexType::Uint16) return false;
+		if (mesh.index_type != renderer::IndexType::Uint16) return false;
 
 		id_ptr = (uint16*)ptr;
 		id_ptr[0] = 0; id_ptr[1] = 1;  id_ptr[2] = 2;
@@ -573,9 +604,44 @@ bool create_vertex_array_object()
 	if (!sm_ptr) return false;
 	auto& sm = *sm_ptr;
 
-	gl::create_vertex_arrays(1, &g_state.vao_id);
+	gl::gen_vertex_arrays(1, &g_state.vao_id);
 	gl::bind_vertex_array(g_state.vao_id);
 
+	///
+	gl::bind_buffer(gl::BufferType::ElementArray, g_state.vb_id);
+
+	for (uint32 i = 0; i < layout.count(); i++)
+	{
+		auto& att = layout.attribute(i);
+		auto si_ptr = sm.get_vertex_attribute(att.hash());
+		if (si_ptr == nullptr) return false;
+		auto& si = *si_ptr;
+
+		gl::enable_vertex_attribute(si.location);
+
+		// floating point shader input
+		if (si.type == engine::VertexInputType::Float)
+		{
+			gl::vertex_attrib_format(
+				si.location,
+				att.elements(),
+				type_gl(att.type()),
+				type_normalize(att.type()),
+				att.offset());
+		}
+		// integer shader input
+		else
+		{
+			gl::vertex_attrib_i_format(
+				si.location,
+				att.elements(),
+				type_gl(att.type()),
+				att.offset());
+		}
+		gl::vertex_attrib_binding(si.location, 5);
+	}
+
+	/*
 	gl::bind_buffer(gl::BufferType::Array, g_state.vb_id);
 	gl::bind_buffer(gl::BufferType::ElementArray, g_state.vb_id);
 
@@ -613,6 +679,7 @@ bool create_vertex_array_object()
 			);
 		}
 	}
+	*/
 
 	gl::bind_vertex_array(0);
 
@@ -712,7 +779,7 @@ void draw_v2()
 		4, g_state.ub_view_id, 0, sizeof(ViewData));
 
 	// draw command setup //
-
+	 
 	uint32 instance_offset = 0;
 
 	for (uint32 i = 0; i < g_state.n_draw_commands; i++)
@@ -735,6 +802,12 @@ void draw_v2()
 
 	gl::bind_buffer(gl::BufferType::DrawIndirect, g_state.dib_id);
 	gl::bind_vertex_array(g_state.vao_id);
+
+	auto& layout = DefaultVertexData::Layout();
+	gl::bind_buffer(gl::BufferType::Array, g_state.vb_id);
+	gl::bind_vertex_buffer(5, g_state.vb_id, 0, layout.stride());
+
+
 	gl::use_program(g_state.shader_id);
 
 	gl::multi_draw_elements_indirect(gl::Primitive::Triangles, gl::IndexType::u16, 0,

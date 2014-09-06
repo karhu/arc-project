@@ -97,4 +97,28 @@ namespace arc { namespace memory { namespace util
         }
     }
 
+	template<typename W, typename T>
+	T forward_align(T value, W alignment)
+	{
+		return (1 + (value - 1) / alignment) * alignment;
+
+		/*
+			uint32 mod = begin % alignment;
+			if (mod == 0) return begin;
+			else return begin + alignment - mod;
+		*/
+	}
+
+	template<typename W>
+	void* forward_align_ptr(void* value, W alignment)
+	{
+		return (void*)((1 + ((size_t)value - 1) / alignment) * alignment);
+
+		/*
+		uint32 mod = begin % alignment;
+		if (mod == 0) return begin;
+		else return begin + alignment - mod;
+		*/
+	}
+
 }}} // namespace arc::memory::util

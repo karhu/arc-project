@@ -54,13 +54,16 @@
     <ClInclude Include="entity\TransformComponent.hpp">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="entity\EntitySystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="entity\common.hpp">
       <Filter>entity</Filter>
     </ClInclude>
-    <ClInclude Include="entity\EntityHandle.hpp">
+    <ClInclude Include="renderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\mesh.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\VertexLayout.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,7 +89,16 @@
     <ClCompile Include="entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="entity\EntitySystem.cpp">
+    <ClCompile Include="renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\SimpleMaterialComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\VertexLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

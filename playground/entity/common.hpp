@@ -6,19 +6,19 @@
 #include <limits>
 
 // TODO:
-
-// - deferred removal
 // - free list for entities + entity generations
 // - better Entity implementation
 // - Update interface / Fast Iteration interface
 // - resize?
-// - refactor into nice functional interface
+// - deferred entity removal
 // - deferred entity delete?
 
 // DONE:
 // - second ComponentType
 // - register components
 // - Entity as proper Engine subsystem
+// - deferred component removal
+// - refactor into nice functional interface
 
 namespace arc { namespace engine {
 

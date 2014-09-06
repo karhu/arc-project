@@ -85,14 +85,15 @@
     <ClInclude Include="engine.hpp" />
     <ClInclude Include="entity.hpp" />
     <ClInclude Include="entity\common.hpp" />
-    <ClInclude Include="entity\EntityHandle.hpp" />
-    <ClInclude Include="entity\EntitySystem.hpp" />
     <ClInclude Include="entity\SimpleComponent.hpp" />
     <ClInclude Include="entity\SimpleMaterialComponent.hpp" />
     <ClInclude Include="entity\TransformComponent.hpp" />
     <ClInclude Include="GeometryManager.hpp" />
     <ClInclude Include="input.hpp" />
     <ClInclude Include="Keys.hpp" />
+    <ClInclude Include="renderer.hpp" />
+    <ClInclude Include="renderer\mesh.hpp" />
+    <ClInclude Include="renderer\VertexLayout.hpp" />
     <ClInclude Include="ShaderManager.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -101,10 +102,13 @@
   <ItemGroup>
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="entity.cpp" />
-    <ClCompile Include="entity\EntitySystem.cpp" />
+    <ClCompile Include="entity\SimpleMaterialComponent.cpp" />
     <ClCompile Include="GeometryManager.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="renderer\mesh.cpp" />
+    <ClCompile Include="renderer\VertexLayout.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
