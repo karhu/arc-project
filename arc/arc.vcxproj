@@ -89,6 +89,7 @@
     <ClInclude Include="logging\buffer_writer.hpp" />
     <ClInclude Include="logging\log.hpp" />
     <ClInclude Include="lua\State.hpp" />
+    <ClInclude Include="math\common.hpp" />
     <ClInclude Include="math\vectors.hpp" />
     <ClInclude Include="memory\Allocator.hpp" />
     <ClInclude Include="memory\LinearAllocator.hpp" />

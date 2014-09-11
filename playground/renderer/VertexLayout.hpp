@@ -15,6 +15,11 @@ namespace arc { namespace renderer {
 		Uint32 = 4
 	};
 
+	enum class PrimitiveType : uint8
+	{
+		Triangle = 0,
+	};
+
 	struct VertexAttribute
 	{
 	public:
@@ -65,6 +70,7 @@ namespace arc { namespace renderer {
 	gl::IndexType type_gl(IndexType t);
 	uint32 type_gl(VertexAttribute::Type t);
 	bool type_normalize(VertexAttribute::Type t);
+	inline uint32 byte_size(IndexType t) { return (uint32)t; }
 
 	// DEPRECATED
 	struct MeshDataOld

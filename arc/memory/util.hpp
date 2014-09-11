@@ -121,4 +121,10 @@ namespace arc { namespace memory { namespace util
 		*/
 	}
 
+	template<typename W>
+	void* ptr_add(void* ptr, W v)
+	{
+		return ((char*)ptr) + v;
+	}
+
 }}} // namespace arc::memory::util

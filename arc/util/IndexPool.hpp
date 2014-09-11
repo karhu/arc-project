@@ -34,6 +34,7 @@ namespace arc
 	public:
 		uint32 create();
 		void release(uint32 h);
+		bool valid(uint32 idx);
 	private:
 		Queue<uint32> m_free_handles;
 		uint32  m_next_id = 0;
@@ -42,4 +43,10 @@ namespace arc
 		uint32  m_very_last_id = 0;
 		std::function<void(uint32)> m_resize_cb = nullptr;
 	};
+
+	// macro ///////////////////////////
+
+	#define DECLARE_ID32(Name)					\
+		struct _##Name##_IDTAG {};				\
+		using Name = Index32<_##Name##_IDTAG>;
 }

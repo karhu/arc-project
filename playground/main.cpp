@@ -5,7 +5,6 @@
 #include <iostream>
 #include <algorithm>
 
-
 #include "arc/core.hpp"
 #include "arc/memory/Allocator.hpp"
 #include "arc/logging/log.hpp"
@@ -203,6 +202,50 @@ int main(int argc, char** argv)
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		--counter;
 	}
+
+	// render queue test ///////////////////////////////////////////////////////////////
+
+	std::cout << "--------------------------------------\n";
+	using namespace renderer;
+	
+
+	Renderer_GL44 renderer;
+	renderer.initialize();
+	auto context = renderer.create_render_context(512, 512 * 8);
+	uint64* data;
+
+	data = (uint64*)context->add_command(ShaderID(0), GeometryID(2), 1, sizeof(uint64));
+	*data = 1;
+
+	data = (uint64*)context->add_command(ShaderID(0), GeometryID(2), 1, sizeof(uint64));
+	*data = 2;
+
+	data = (uint64*)context->add_command(ShaderID(1), GeometryID(2), 1, sizeof(uint64));
+	*data = 3;
+
+	data = (uint64*)context->add_command(ShaderID(1), GeometryID(2), 1, sizeof(uint64));
+	*data = 4;
+
+	data = (uint64*)context->add_command(ShaderID(0), GeometryID(3), 1, sizeof(uint64));
+	*data = 5;
+
+	data = (uint64*)context->add_command(ShaderID(0), GeometryID(3), 1, sizeof(uint64));
+	*data = 6;
+
+	data = (uint64*)context->add_command(ShaderID(1), GeometryID(3), 1, sizeof(uint64));
+	*data = 7;
+
+	data = (uint64*)context->add_command(ShaderID(1), GeometryID(3), 1, sizeof(uint64));
+	*data = 8;
+
+	renderer.submit_render_context(context);
+	renderer.render_frame();
+
+	renderer.finalize();
+
+	std::cout << "--------------------------------------\n";
+	
+
 
 	// entity test /////////////////////////////////////////////////////////////////////
 
@@ -774,7 +817,6 @@ void draw_v2()
 	vd.proj_matrix = glm::perspective(58.0f, (float)g_config.window_width / (float)g_config.window_height, 0.25f, 1000.0f);
 	vd.proj_view_matrix = vd.proj_matrix * vd.view_matrix;
 	
-
 	gl::bind_buffer_range(gl::ShaderBufferTarget::Uniform,
 		4, g_state.ub_view_id, 0, sizeof(ViewData));
 
@@ -804,7 +846,10 @@ void draw_v2()
 	gl::bind_vertex_array(g_state.vao_id);
 
 	auto& layout = DefaultVertexData::Layout();
-	gl::bind_buffer(gl::BufferType::Array, g_state.vb_id);
+
+	gl::bind_buffer(gl::BufferType::ElementArray, g_state.vb_id);
+	//gl::bind_buffer(gl::BufferType::Array, g_state.vb_id);
+
 	gl::bind_vertex_buffer(5, g_state.vb_id, 0, layout.stride());
 
 

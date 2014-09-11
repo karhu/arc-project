@@ -13,22 +13,19 @@
 
 namespace arc { namespace renderer {
 
-	struct _MeshIDTag {};
-	struct _GeometryIDHandleTag {};
-	struct _ShaderIDTag {};
-	struct _RenderPassIDTag {};
-	struct _VertexLayoutIDTag {};
+	DECLARE_ID32(GeometryID);
+	DECLARE_ID32(BufferID);
+	DECLARE_ID32(VertexLayoutID);
+	DECLARE_ID32(ShaderID);
+	DECLARE_ID32(RenderPassID);
 
-	using MeshID = Index32<_MeshIDTag>;
-	using GeometryBufferID = Index32<_GeometryIDHandleTag>;
-	using ShaderID = Index32 < _ShaderIDTag > ;
-	using RenderPassID = Index32 < _RenderPassIDTag > ;
-	using VertexLayoutID = Index32 < _VertexLayoutIDTag > ;
+	static const GeometryID      INVALID_GEOMETRY_ID      = GeometryID(0);
+	static const BufferID        INVALID_BUFFER_ID		  = BufferID(0);
+	static const VertexLayoutID  INVALID_VERTEX_LAYOUT_ID = VertexLayoutID(0);
+	static const ShaderID        INVALID_SHADER_ID        = ShaderID(0);
+	static const RenderPassID    INVALID_RENDER_PASS_ID   = RenderPassID(0);
 
 	using InternedString = const char*;
-
-	static const MeshID INVALID_MESH_ID = MeshID(-1);
-	static const GeometryBufferID INVALID_GEOMETRY_BUFFER_ID = GeometryBufferID(0);
 
 	struct UntypedBuffer
 	{
@@ -42,52 +39,102 @@ namespace arc { namespace renderer {
 
 }}
 
-// Function Definitions /////////////////////////////////////////////////////////////////////////////////////////
-
 namespace arc { namespace renderer {
 
-	VertexLayoutID register_static_vertex_layout(VertexLayout* layout);
-	void unregister_vertex_layout(VertexLayoutID id);
+	struct InstanceUniformInfo
+	{
+		StringHash32 name_hash;
+		uint8 size;
 
-	GeometryBufferID create_geometry_buffer(InternedString name, uint32 size);
-	void destroy_geometry_buffer(GeometryBufferID h);
+		// opengl
+		uint8 binding;
+		uint8 buffer;
+		uint8 offset;
 
-	MeshID allocate_mesh(GeometryBufferID buffer, uint32 index_count, uint32 vertex_count, IndexType index_type, VertexLayoutID vertex_layout_id);
-	void free_mesh(MeshID mesh_id);
+		// render context
+		uint16 draw_data_offset;
+	};
 
-	UntypedBuffer map_mesh_vertices(MeshID mesh_id);
-	void unmap_mesh_vertices(MeshID mesh_id);
+	struct InstanceUniformBlock
+	{
+		void*  ptr;
+		uint32 gl_buffer_id;
 
+		uint16 draw_data_offset;
+		uint16 stride;
+	};
+
+	struct ShaderData
+	{
+		uint32 gl_id;
+		InternedString name;
+
+		uint16 draw_data_size;
+		uint16 draw_data_offset;
+
+		InstanceUniformInfo* iu_data;
+		uint16 iu_count;
+
+		InstanceUniformBlock* iu_block_data;
+		uint8  iu_block_count;
+
+		uint16 max_batch_size;
+
+		uint16 batch_begin_idx;
+		uint16 batch_end_idx;
+		uint16 batch_current_idx;
+	};
 }}
+
+// Function Definitions /////////////////////////////////////////////////////////////////////////////////////////
 
 namespace arc { namespace renderer {
 
 	class Renderer_GL44;
 
-	union SortKey
-	{
-		struct
-		{
-			uint64 target_config : 16;
-			uint64 depth : 16;
-			uint64 buffer : 8;
-			uint64 shader : 8;
-			uint64 shader_variation : 8;
-			uint64 various : 8;
-		} fields;
-		uint64 integer;
-	};
-
 	struct RenderCommand
 	{
-		SortKey sort_key;
+		uint64 sort_key;
 		void* data;
+	};
+
+	struct BufferData
+	{
+		uint32 size;
+		uint32 gl_id;
+		uint32 front;
+		InternedString name;
+	};
+
+	struct VertexLayoutData
+	{
+		VertexLayout* ref = nullptr;
+		uint32 gl_vao;
+	};
+
+	struct MeshData
+	{
+		uint32			vertex_begin;
+		uint32			vertex_count;
+		uint32			vertex_size;
+		VertexLayoutID	vertex_layout;
+
+		uint32		index_begin;
+		uint32		index_count;
+		uint32		index_size;
+		IndexType	index_type;
+
+		uint32 block_begin;
+		uint32 block_size;
+
+		BufferID buffer_id;
+		uint32 gl_id;
 	};
 
 	class RenderContext
 	{
 	public:
-		UntypedBuffer add_command(ShaderID shader, MeshID mesh, float depth, uint32 data_size);
+		void* add_command(ShaderID shader, GeometryID mesh, uint16 depth, uint32 data_size);
 	private:
 		uint32 required_data_size(uint32 max_command_count, uint32 max_data_size);
 	private:
@@ -98,44 +145,68 @@ namespace arc { namespace renderer {
 		RenderCommand* m_commands;
 		uint32 m_max_command_count;
 		uint32 m_count;
+		Renderer_GL44* m_renderer;
 	private:
 		friend class Renderer_GL44;
-	};
-
-	enum class PrimitiveType : uint8
-	{
-		Triangle = 0,
 	};
 
 	class Renderer_GL44
 	{
 	public:
+		Renderer_GL44() = default;
+	public:
+		bool initialize();
+		void finalize();
+		bool is_initialized();
+	public:
 		void update_frame_begin();
 	public:
-		RenderContext* get_render_context(uint32 max_command_count, uint32 max_data_size);
+		void render_frame();
+	public:
+		BufferID create_buffer(InternedString name, uint32 size);
+		void destroy_buffer(BufferID id);
+	public:
+		GeometryID allocate_geometry(BufferID buffer, uint32 index_count, uint32 vertex_count, IndexType index_type, VertexLayoutID vertex_layout);
+		void free_geometry(GeometryID geometry);
+		UntypedBuffer map_geometry_vertices(GeometryID geometry_id);
+		void unmap_geometry_vertices(GeometryID geometry_id);
+		BufferID get_buffer(GeometryID geometry_id);
+		VertexLayoutID get_layout(GeometryID geometry_id);
+	public:
+		VertexLayoutID register_static_vertex_layout(VertexLayout* layout);
+		void unregister_vertex_layout(VertexLayoutID id);
+	public:
+		RenderContext* create_render_context(uint32 max_command_count, uint32 max_data_size);
 		void submit_render_context(RenderContext* render_context);
+	public:
+		uint32 shader_get_instance_uniform_offset(ShaderID shader, StringHash32 name);
+	private:
+		void enable_render_pass(uint16 id);
+		void enable_buffer(uint8 buffer, uint8 vertex_layout);
+		void enable_shader(uint8 shader, uint8 shader_variation);
+		void enable_shader_variation(uint8 shader_variation);
+		void enable_vertex_layout(uint8 buffer, uint8 vertex_layout);
 	private:
 		memory::LinearAllocator m_frame_alloc;
 		Counter32 m_frame_counter;
+	private:
+		uint32 m_buffer_gl_ids[256];
+		IndexPool32 m_buffer_indices;
+		Array<BufferData> m_buffer_data;
+	private:
+		uint32 m_vao_gl_ids[256];
+		IndexPool32 m_vertex_layout_indices;
+		Array<VertexLayoutData> m_vertex_layout_data;
+	private:
+		IndexPool32 m_geometry_indices;
+		Array<MeshData> m_geometry_data;
+	private:
+		Array<ShaderData> m_shader_data;
+	private:
+		Array<RenderContext*> m_submitted_render_contexts;
 	};
 
-	void prepare_shader(ShaderID shader_id);
-	void prepare_geometry_buffer();
-
-	inline SortKey encode_sort_key(uint16 target_config, uint16 depth, GeometryBufferID buffer, ShaderID shader, uint8 shader_variation)
-	{
-		SortKey sk;
-		sk.fields.target_config = target_config;
-		sk.fields.depth = depth;
-		sk.fields.buffer = buffer.value();
-		sk.fields.shader = shader.value();
-		sk.fields.shader_variation = shader_variation;
-		sk.fields.various = 0;
-		return sk;
-	}
-
 }}
-
 
 // Internals ///////////////////////////////////////////////////////////////////////////////////////////////////
 

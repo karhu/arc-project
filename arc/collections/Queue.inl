@@ -169,6 +169,7 @@ namespace arc
 			cu::delete_elements<T>(m_data + m_first, frontm_size);
 			cu::delete_elements<T>(m_data, backm_size);
 			m_alloc->free(m_data);
+			m_alloc = nullptr;
 		}
 	}
 

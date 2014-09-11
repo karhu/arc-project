@@ -66,6 +66,9 @@ namespace arc { namespace hash {
 		uint64 m_value = 0;
 	};
 
+	inline bool operator==(StringHash64 lh, StringHash64 rh) { return lh.value() == rh.value(); }
+	inline bool operator!=(StringHash64 lh, StringHash64 rh) { return lh.value() != rh.value(); }
+
 	template<uint32 N> inline
 	ARC_CONSTEXPR StringHash64 string_hash64(const char(&str)[N])
 	{
@@ -83,6 +86,35 @@ namespace arc { namespace hash {
 	}
 
 	// 32bit string hash ///////////////////////////////////////////////////
+
+	struct StringHash32
+	{
+		ARC_CONSTEXPR StringHash32() {}
+		ARC_CONSTEXPR StringHash32(uint32 value) : m_value(value) {}
+
+		uint32 value() { return m_value; }
+	private:
+		uint32 m_value = 0;
+	};
+
+	inline bool operator==(StringHash32 lh, StringHash32 rh) { return lh.value() == rh.value(); }
+	inline bool operator!=(StringHash32 lh, StringHash32 rh) { return lh.value() != rh.value(); }
+
+	template<uint32 N> inline
+	ARC_CONSTEXPR StringHash32 string_hash64(const char(&str)[N])
+	{
+		return{ (uint32)hash::fnv_1a::ct64(str) };
+	}
+
+	inline StringHash32 string_hash32(const String& s)
+	{
+		return{ (uint32)hash::fnv_1a::rt64(s.c_str(), s.length()) };
+	}
+
+	inline StringHash32 string_hash32(StringView s)
+	{
+		return{ (uint32)hash::fnv_1a::rt64(s.c_str(), s.length()) };
+	}
 
 	// default string hash /////////////////////////////////////////////////
 
