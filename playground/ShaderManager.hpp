@@ -47,7 +47,7 @@ namespace arc { namespace engine {
 		ID create_from_file(StringView file_path);
 
 		bool register_vertex_attribute(StringView name, VertexInputType type, uint8 element_count, uint8 location);
-		const VertexAttribute* get_vertex_attribute(StringHash name);
+		const VertexAttribute* get_vertex_attribute(StringHash32 name);
 		/*
 		protected:
 		LuaShaderSystem();

@@ -29,6 +29,7 @@
 #include "arc/memory/util.hpp"
 
 #include "renderer/mesh.hpp"
+#include "renderer/RendererBase.hpp"
 
 using namespace arc;
 
@@ -55,9 +56,9 @@ renderer::VertexLayout& DefaultVertexData::Layout()
 	using namespace arc::renderer;
 	using Type = VertexAttribute::Type;
 	static VertexAttribute attributes[] = {
-		{ SH("position"),     Type::float32,  3, offsetof(DefaultVertexData, position) },
-		{ SH("normal"),       Type::float32,  3, offsetof(DefaultVertexData, normal) },
-		{ SH("color"),        Type::uint8_nf, 4, offsetof(DefaultVertexData, color) },
+		{ SH32("position"),     Type::float32,  3, offsetof(DefaultVertexData, position) },
+		{ SH32("normal"),       Type::float32,  3, offsetof(DefaultVertexData, normal) },
+		{ SH32("color"),        Type::uint8_nf, 4, offsetof(DefaultVertexData, color) },
 	};
 	static VertexLayout layout = { "DefaultVertexData", attributes, 3, sizeof(DefaultVertexData) };
 	return layout;
@@ -133,6 +134,8 @@ struct TestHandler
 	static bool iteration(uint32 index, double& user_data) { std::cout << user_data << "  " << index << ": " << sizeof(T) << std::endl; user_data += 1; return true; }
 };
 
+#include "example\renderer_ex.hpp"
+
 int main(int argc, char** argv)
 {
 	std::cout << "<begin>" << std::endl;
@@ -170,10 +173,14 @@ int main(int argc, char** argv)
 	shader_manager.register_vertex_attribute("color",      engine::VertexInputType::Float,    3, 2);
 	shader_manager.register_vertex_attribute("data_index", engine::VertexInputType::Unsigned, 4, 10);
 
-	auto shader = shader_manager.create_from_file("shader.lua");
+	//auto shader = shader_manager.create_from_file("shader.lua");
+	auto shader = shader_manager.create_from_file("example_shader.lua");
 	g_state.shader_id = shader.value();
 
 	// experiment //////////////////////////////////////////////////////////////////////
+
+
+
 
 	bool success;
 
@@ -185,12 +192,11 @@ int main(int argc, char** argv)
 
 	setup_scene();
 	
-	int32 counter = 60;
+	int32 counter = 5;
 
 	bool stop = false;
 
 	using namespace arc::input;
-
 
 	while (counter > 0 && !stop)
 	{
@@ -203,11 +209,16 @@ int main(int argc, char** argv)
 		--counter;
 	}
 
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	renderer_example();
+
 	// render queue test ///////////////////////////////////////////////////////////////
 
 	std::cout << "--------------------------------------\n";
 	using namespace renderer;
 	
+#if 0
 
 	Renderer_GL44 renderer;
 	renderer.initialize();
@@ -244,7 +255,7 @@ int main(int argc, char** argv)
 	renderer.finalize();
 
 	std::cout << "--------------------------------------\n";
-	
+#endif
 
 
 	// entity test /////////////////////////////////////////////////////////////////////

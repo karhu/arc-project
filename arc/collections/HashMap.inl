@@ -12,6 +12,27 @@ namespace arc
         : m_hashes(alloc), m_data(alloc)
     {}
 
+
+	template<typename T>
+	void HashMap<T>::initialize(memory::Allocator* alloc)
+	{
+		m_hashes.initialize(alloc);
+		m_data.initialize(alloc);
+	}
+
+	template<typename T>
+	void HashMap<T>::finalize()
+	{
+		m_hashes.finalize();
+		m_data.finalize();
+	}
+
+	template<typename T>
+	bool HashMap<T>::is_initialized()
+	{
+		return m_hashes.is_initialized();
+	}
+
     template<typename T>
     bool HashMap<T>::remove(uint64 key)
     {

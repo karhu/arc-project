@@ -1,5 +1,7 @@
 #include "mesh.hpp"
 
+#if 0
+
 #include "arc/collections/Array.inl"
 #include "arc/collections/Queue.inl"
 #include "arc/math/common.hpp"
@@ -20,6 +22,7 @@ namespace arc { namespace renderer {
 	{
 		struct
 		{
+			//TODO one bit for index_type
 			uint64 vertex_layout : 8; //TODO do we need vertex_layout_id?
 			uint64 shader_variation : 8;
 			uint64 buffer : 8;
@@ -577,3 +580,5 @@ namespace arc { namespace renderer {
 	}
 
 }}
+
+#endif

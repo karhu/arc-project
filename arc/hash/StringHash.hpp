@@ -101,7 +101,7 @@ namespace arc { namespace hash {
 	inline bool operator!=(StringHash32 lh, StringHash32 rh) { return lh.value() != rh.value(); }
 
 	template<uint32 N> inline
-	ARC_CONSTEXPR StringHash32 string_hash64(const char(&str)[N])
+	ARC_CONSTEXPR StringHash32 string_hash32(const char(&str)[N])
 	{
 		return{ (uint32)hash::fnv_1a::ct64(str) };
 	}
@@ -139,3 +139,5 @@ namespace arc { namespace hash {
 } // namespace arc
 
 #define SH(ARG) string_hash(""ARG)
+#define SH32(ARG) string_hash32(""ARG)
+#define SH64(ARG) string_hash64(""ARG)

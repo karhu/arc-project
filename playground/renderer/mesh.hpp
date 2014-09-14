@@ -1,5 +1,5 @@
 #pragma once
-
+#if 0
 #include "arc/common.hpp"
 #include "arc/lua/State.hpp"
 #include "arc/collections/Array.hpp"
@@ -8,34 +8,16 @@
 #include "arc/util/Counter.hpp"
 
 #include "VertexLayout.hpp"
+#include "types.hpp"
 
 // Type Definitions /////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace arc { namespace renderer {
 
-	DECLARE_ID32(GeometryID);
 	DECLARE_ID32(BufferID);
-	DECLARE_ID32(VertexLayoutID);
-	DECLARE_ID32(ShaderID);
-	DECLARE_ID32(RenderPassID);
-
-	static const GeometryID      INVALID_GEOMETRY_ID      = GeometryID(0);
 	static const BufferID        INVALID_BUFFER_ID		  = BufferID(0);
-	static const VertexLayoutID  INVALID_VERTEX_LAYOUT_ID = VertexLayoutID(0);
-	static const ShaderID        INVALID_SHADER_ID        = ShaderID(0);
-	static const RenderPassID    INVALID_RENDER_PASS_ID   = RenderPassID(0);
 
 	using InternedString = const char*;
-
-	struct UntypedBuffer
-	{
-		void*  ptr;
-		size_t size;
-
-		inline bool valid() { return ptr != nullptr; }
-	};
-
-	static const UntypedBuffer INVALID_UNTYPED_BUFFER = { nullptr, 0 };
 
 }}
 
@@ -216,3 +198,5 @@ namespace arc { namespace renderer { namespace internal {
 	bool finalize_vertex_buffers();
 
 }}}
+
+#endif

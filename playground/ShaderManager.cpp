@@ -146,7 +146,7 @@ namespace arc { namespace engine {
 			String mangled_name;
 
 			v.select(2).get(name);
-			auto id = string_hash(name);
+			auto id = string_hash32(name);
 			// get the mangled name
 			v.select("src_name").get(mangled_name);
 
@@ -203,7 +203,7 @@ namespace arc { namespace engine {
 
 	bool ShaderManager::register_vertex_attribute(StringView name, VertexInputType type, uint8 element_count, uint8 location)
 	{
-		auto key = string_hash64(name);
+		auto key = string_hash32(name);
 		VertexAttribute value = { name, type, element_count, location };
 		
 		bool added;
@@ -215,7 +215,7 @@ namespace arc { namespace engine {
 		return true;
 	}
 
-	const ShaderManager::VertexAttribute* ShaderManager::get_vertex_attribute(StringHash name)
+	const ShaderManager::VertexAttribute* ShaderManager::get_vertex_attribute(StringHash32 name)
 	{
 		auto entry = m_vertex_attributes.lookup(name.value());
 		return entry ? &entry->value() : nullptr;

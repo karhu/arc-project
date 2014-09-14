@@ -23,7 +23,6 @@ namespace arc
 		uint32 m_value;
 	};
 
-
 	// pools ///////////////////////////
 
 	class IndexPool32

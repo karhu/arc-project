@@ -27,7 +27,13 @@ namespace arc
 		};
 
 	public:
+		HashMap() = default;
 		HashMap(memory::Allocator& alloc);
+
+	public:
+		void initialize(memory::Allocator* alloc);
+		void finalize();
+		bool is_initialized();
 
 	public:
 		Entry* lookup(uint64 key);

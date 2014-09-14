@@ -2,23 +2,11 @@
 
 #include "arc/common.hpp"
 #include "arc/hash/StringHash.hpp"
-
 #include "arc/gl/types.hpp"
 
+#include "types.hpp"
+
 namespace arc { namespace renderer {
-
-	enum class IndexType : uint8
-	{
-		Undefined = 0,
-		Uint8 = 1,
-		Uint16 = 2,
-		Uint32 = 4
-	};
-
-	enum class PrimitiveType : uint8
-	{
-		Triangle = 0,
-	};
 
 	struct VertexAttribute
 	{
@@ -33,17 +21,17 @@ namespace arc { namespace renderer {
 			int8_nf, int16_nf, int32_nf,
 		};
 	public:
-		inline StringHash hash() const { return m_hash; }
+		inline StringHash32 hash() const { return m_hash; }
 		inline Type type() const       { return m_type; }
 		inline uint8 elements() const  { return m_elements; }
 		inline uint8 offset() const    { return m_offset; }
 	public:
-		inline VertexAttribute(StringHash hash, Type type, uint8 elements, uint8 offset)
+		inline VertexAttribute(StringHash32 hash, Type type, uint8 elements, uint8 offset)
 			: m_hash(hash), m_type(type), m_elements(elements), m_offset(offset) {}
 		inline VertexAttribute()
 			: m_hash(0), m_type(Type::undefined), m_elements(0), m_offset(0) {}
 	private:
-		StringHash m_hash;
+		StringHash32 m_hash;
 		Type m_type;
 		uint8 m_elements;
 		uint8 m_offset;
@@ -57,6 +45,8 @@ namespace arc { namespace renderer {
 		inline const VertexAttribute& attribute(uint8 idx) const { return m_attributes[idx]; }
 		inline uint8 stride() const                              { return m_stride; }
 	public:
+		const VertexAttribute* find_attribute(StringHash32 name_hash) const;
+	public:
 		inline VertexLayout(const char* name, VertexAttribute* attributes, uint8 count, uint8 stride)
 			: m_name(name), m_attributes(attributes), m_count(count), m_stride(stride) {}
 	private:
@@ -66,6 +56,14 @@ namespace arc { namespace renderer {
 		uint8 m_stride = 0;
 	};
 
+	inline const VertexAttribute* VertexLayout::find_attribute(StringHash32 name_hash) const
+	{
+		for (uint32 i = 0; i < m_count; i++)
+		{
+			if (m_attributes[i].hash() == name_hash) return m_attributes + i;
+		}
+		return nullptr;
+	}
 
 	gl::IndexType type_gl(IndexType t);
 	uint32 type_gl(VertexAttribute::Type t);
@@ -82,7 +80,7 @@ namespace arc { namespace renderer {
 		uint32 index_offset;  // index offset in index values
 
 		uint32 buffer;
-		IndexType index_type = IndexType::Undefined;
+		IndexType index_type = IndexType::None;
 		VertexLayout* vertex_layout = nullptr;
 	};
 

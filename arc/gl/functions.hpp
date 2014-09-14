@@ -113,6 +113,13 @@ inline void enable_vertex_attribute(uint32 location)
     ARC_GL_CHECK_FOR_ERRORS();
 }
 
+inline void disable_vertex_attribute(uint32 location)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glDisableVertexAttribArray(location);
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
 inline void vertex_attrib_pointer(uint32 location, uint32 element_count, uint32 type,
                                   bool normalize, uint32 stride, uint32 offset)
 {
