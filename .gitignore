@@ -55,3 +55,4 @@ Debug/*
 external/*
 *.ipch
 playground/Debug/*
+Release/*

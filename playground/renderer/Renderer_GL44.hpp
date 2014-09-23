@@ -75,7 +75,7 @@ namespace arc { namespace renderer {
 	public:
 		ShaderID shader_create(StringView lua_file_path) override;
 		//void shader_destroy(ShaderID id) override;
-		//uint32 shader_get_instance_uniform_offset(ShaderID shader, StringHash32 name) override;
+		int32 shader_get_uniform_offset(ShaderID shader, ShaderUniformType uniform_type, PrimitiveType type, StringHash32 name) override;
 	private:
 		bool m_is_initialized = false;
 	private:
@@ -147,18 +147,38 @@ namespace arc { namespace renderer {
 			uint8 elements;
 			uint8 location;
 		};
+
+		struct Uniform
+		{
+			StringHash32 name;
+			PrimitiveType type;
+			ShaderUniformType uniform_type;
+			
+			uint8 data_offset;		// offset in the drawcall data buffer
+
+			uint8 buffer_offset;	// offset in the gpu uniform buffer
+			uint8 buffer_stride;	// stride in the gpu uniform buffer
+			uint8 buffer_binding;   // shader binding point of the buffer
+		};
+
 		struct ShaderData
 		{
 			VertexAtt vertex_attributes[16];
-			uint32 vertex_attribute_count;
+			uint32 vertex_attribute_count = 0;
+
+			Uniform uniforms[16];
+			uint32 uniform_count = 0;
 
 			uint32 gl_id;
 		};
+
 		Array<ShaderData> m_shader_data;
 		IndexPool32 m_shader_indices;
 		lua::State m_lua;
 		lua::Value m_fun_load_file;
 		lua::Value m_fun_gen_code;
+	private:
+		void shader_grab_instance_data(uint32 material_id, void* cmd_data);
 	private:
 		struct RenderState
 		{
@@ -170,7 +190,7 @@ namespace arc { namespace renderer {
 		};
 		void render_state_switch(RenderState& current, uint64 sort_key, DefaultCommandData& cmd_data);
 		uint32 m_gl_dib;
-		void* m_gl_dib_data;
+		UntypedBuffer m_gl_dib_data;
 	};
 
 }} // namespace arc::renderer

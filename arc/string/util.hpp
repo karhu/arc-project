@@ -1,8 +1,7 @@
 #pragma once
 
 #include "arc/core/numeric_types.hpp"
-
-#include <stdio.h>
+#include "arc/string/StringView.hpp"
 
 namespace arc
 {
@@ -12,6 +11,7 @@ namespace arc
     bool operator==(const String& first, const StringView& second);
     bool operator==(const StringView& first, const String& second);
     bool operator==(const StringView& first, const StringView& second);
+
 
 #if 0
 	void fmt_test()
@@ -235,3 +235,24 @@ namespace arc
 #endif
 
 } // namespace arc
+
+
+namespace arc { namespace cstr {
+
+	uint32 length(const char* str, uint32 max_length);
+
+}}
+
+namespace arc { namespace string {
+
+	/// returns a SubString where characters for which filter returns true
+	/// have been removed from the end
+	StringView remove_trailing(StringView str, bool(*filter)(char));
+
+	/// checks if a specific character is whitespace
+	/// considered so far: ' ', '\n', '\t'
+	bool is_whitespace(char c);
+
+}} 
+
+

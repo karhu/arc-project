@@ -82,8 +82,10 @@
     <ClInclude Include="core\assert.hpp" />
     <ClInclude Include="core\compatibility.hpp" />
     <ClInclude Include="core\numeric_types.hpp" />
+    <ClInclude Include="gl\debug.hpp" />
     <ClInclude Include="gl\error_checking.hpp" />
     <ClInclude Include="gl\functions.hpp" />
+    <ClInclude Include="gl\meta.hpp" />
     <ClInclude Include="gl\types.hpp" />
     <ClInclude Include="hash\StringHash.hpp" />
     <ClInclude Include="logging\buffer_writer.hpp" />
@@ -95,8 +97,10 @@
     <ClInclude Include="memory\LinearAllocator.hpp" />
     <ClInclude Include="memory\util.hpp" />
     <ClInclude Include="string\all.hpp" />
+    <ClInclude Include="string\ConsoleWriter.hpp" />
     <ClInclude Include="string\String.hpp" />
     <ClInclude Include="string\StringView.hpp" />
+    <ClInclude Include="string\write_string.hpp" />
     <ClInclude Include="string\util.hpp" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="util\Counter.hpp" />
@@ -115,6 +119,7 @@
     <ClCompile Include="memory\LinearAllocator.cpp" />
     <ClCompile Include="string\String.cpp" />
     <ClCompile Include="string\StringView.cpp" />
+    <ClCompile Include="string\write_string.cpp" />
     <ClCompile Include="string\util.cpp" />
     <ClCompile Include="util\IndexPool.cpp" />
   </ItemGroup>

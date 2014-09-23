@@ -51,7 +51,7 @@ namespace arc { namespace renderer {
 
 	static_assert(sizeof(SortKey_GL44) <= 8, "SortKey is too large");
 
-	static const uint32 DEFAULT_BINDING_INDEX_GL = 0;
+	static const uint32 DEFAULT_BINDING_INDEX_GL = 4;
 
 }} //arc::renderer
 
@@ -73,10 +73,12 @@ namespace arc { namespace renderer {
 			gl::BufferStorage::Persistent |
 			gl::BufferStorage::Coherent);
 
-		m_gl_dib_data = gl::map_buffer_range(target, 0, draw_commands_size,
+		m_gl_dib_data = {
+			gl::map_buffer_range(target, 0, draw_commands_size,
 			gl::BufferAccess::Write |
 			gl::BufferAccess::Persistent |
-			gl::BufferAccess::Coherent);
+			gl::BufferAccess::Coherent),
+			draw_commands_size };
 
 		// geometry buffers ///////////////////////////////////
 		{
@@ -603,9 +605,6 @@ namespace arc { namespace renderer {
 			return INVALID_SHADER_ID;
 		}
 
-		//std::cout << "vertex_source:   \n" << vertex_source.c_str() << std::endl;
-		//std::cout << "fragment_source: \n" << fragment_source.c_str() << std::endl;
-
 		// OpenGL part //
 
 		uint32 vert_id = gl::create_shader(gl::ShaderType::Vertex);
@@ -673,6 +672,17 @@ namespace arc { namespace renderer {
 		}
 		m_shader_data[idx].vertex_attribute_count = next_location;
 
+
+
+		// shader instance uniforms
+#if 0
+		auto inputs = config.select("vertex_uniforms").select("instance");
+		for (auto& v : lua::each_value(inputs))
+		{
+			//TODO
+		}
+#endif
+
 		// link shader
 		bool link_success = gl::link_program(program_id);
 		gl::detach_shader(program_id, vert_id);
@@ -712,28 +722,9 @@ namespace arc { namespace renderer {
 		current.index_type = gcd.index_type;
 		current.primitive_type = gcd.primitive;
 
-		// if the buffer has changed
-		if (sk.buffer != (uint8)current.buffer)
-		{
-			uint32 gl_buffer = m_geom_buffer_gl_ids[(uint32)sk.buffer];
-
-			gl::bind_buffer(gl::BufferType::ElementArray, gl_buffer);
-			gl::bind_vertex_buffer(DEFAULT_BINDING_INDEX_GL, gl_buffer, 0, gcd.layout->stride());
-
-			current.buffer = (GeometryBufferType)sk.buffer;
-		}
-
 		bool layout_changed = gcd.layout != current.vertex_layout;
 		bool shader_changed = sk.material != current.shader.value();
-
-		// if the layout has changed
-		if (layout_changed)
-		{
-			uint32 gl_buffer = m_geom_buffer_gl_ids[(uint32)sk.buffer];
-			gl::bind_vertex_buffer(DEFAULT_BINDING_INDEX_GL, gl_buffer, 0, gcd.layout->stride());
-			
-			current.vertex_layout = gcd.layout;
-		}
+		bool buffer_changed = sk.buffer != (uint8)current.buffer;
 
 		// if the shader has changed
 		if (shader_changed)
@@ -785,6 +776,21 @@ namespace arc { namespace renderer {
 			}
 		}
 
+		// if the buffer has changed
+		if (buffer_changed || layout_changed)
+		{
+			uint32 gl_buffer = m_geom_buffer_gl_ids[(uint32)sk.buffer];
+
+			if (buffer_changed)
+			{
+				gl::bind_buffer(gl::BufferType::ElementArray, gl_buffer);
+				current.buffer = (GeometryBufferType)sk.buffer;
+			}
+			
+			gl::bind_vertex_buffer(DEFAULT_BINDING_INDEX_GL, gl_buffer, 0, gcd.layout->stride());
+			current.vertex_layout = gcd.layout;
+		}
+
 		// TODO minimize shader/layout state changes
 
 	}
@@ -819,22 +825,30 @@ namespace arc { namespace renderer {
 		uint32 m_render_command_count = m_submitted_render_buckets.back()->m_count;
 		if (m_render_command_count == 0) return;
 
-		Array<uint64> draws(m_frame_alloc, 0);
-		
 		// init render state
 		RenderState current;
 		auto batch_key = SortKey_GL44::Decode(m_render_command_data[0].sort_key);
-
 		gl::bind_vertex_array(m_vao_gl_ids[0]);
 		render_state_switch(current, batch_key.integer, *(DefaultCommandData*)m_render_command_data[0].data);
 
-		gl::DrawElementsIndirectCommand* dib_data = (gl::DrawElementsIndirectCommand*)m_gl_dib_data;
+		// setup draw indirect buffer
+		auto dib_data = make_slice<gl::DrawElementsIndirectCommand>(
+			(gl::DrawElementsIndirectCommand*)m_gl_dib_data.ptr,
+			m_gl_dib_data.size / sizeof(gl::DrawElementsIndirectCommand)
+		);
 		uint32 dib_begin = 0;
 		uint32 dib_count = 0;
 		gl::bind_buffer(gl::BufferType::DrawIndirect, m_gl_dib);
 
+		// handle each render command
 		for (uint32 i = 0; i < m_render_command_count; i++)
 		{
+			if (i >= dib_data.size())
+			{
+				LOG_ERROR(tag_gl44, "Render command limit reached");
+				break;
+			}
+
 			auto& cmd = m_render_command_data[i];
 			auto  key = SortKey_GL44::Decode(cmd.sort_key);
 			auto& dcd = *(DefaultCommandData*)m_render_command_data[i].data;
@@ -858,6 +872,7 @@ namespace arc { namespace renderer {
 				dib_count = 0;
 				dib_begin += dib_count;
 
+				// change render state state
 				render_state_switch(current, cmd.sort_key, dcd);
 				batch_key = key;
 			}
@@ -870,21 +885,10 @@ namespace arc { namespace renderer {
 			draw.base_instance = i;
 			draw.instance_count = 1;
 
+			//shader_grab_instance_data(material_id, cmd.data);
+
 			dib_count += 1;
 
-			/*
-			void* data = (char*)cmd.data + sizeof(DefaultCommandData);
-			draws.push_back(*((uint64*)data));
-			gl::draw_elements_instanced_bv_bi(
-				_gl_primitive_type(current.primitive_type),
-				g.index_count,
-				_gl_index_type(current.index_type),
-				g.index_begin,
-				1, // instance count
-				g.vertex_begin_count,
-				i // base instance
-				);
-			*/
 		}
 
 		// render enqueued
@@ -895,12 +899,66 @@ namespace arc { namespace renderer {
 			dib_count,
 			sizeof(gl::DrawElementsIndirectCommand)
 			);
+
 		dib_count = 0;
 		dib_begin += dib_count;
 
-		gl::bind_vertex_array(0);
+	}
+
+	void Renderer_GL44::shader_grab_instance_data(uint32 material_id, void* cmd_data)
+	{
+#if 0
+		struct UniformBufferState
+		{
+			struct Entry
+			{
+				void* begin = nullptr;
+				uint32 dirty_begin = 0;
+				uint32 dirty_next = 0;
+				uint32 size = 0;
+			};
+
+			Entry entries[16];
+		};
+
+		UniformBufferState state;
+
+		namespace mu = memory::util;
+
+		//TODO material_id to shader, ok?
+		auto sd = m_shader_data[material_id];
+		
+		for (uint8 i = 0; i < sd.uniform_count; i++)
+		{
+			auto& u = sd.uniforms[i];
+			if (u.uniform_type == ShaderUniformType::Instanced)
+			{
+				auto& e = state.entries[u.buffer_binding];
+				void* dest = mu::forward_align_ptr(e.begin, e.dirty_next + u.buffer_offset);
+				void* src = mu::forward_align_ptr(cmd_data, u.data_offset);
+				std::memcpy(dest,src,u.)
+			}
+		}
+#endif
 	}
 	
+	int32 Renderer_GL44::shader_get_uniform_offset(ShaderID shader_id, ShaderUniformType uniform_type, PrimitiveType type, StringHash32 name)
+	{
+		ARC_ASSERT(m_shader_indices.valid(shader_id.value()), "Invalid ShaderID");
+		auto& sd = m_shader_data[shader_id.value()];
+
+		for (uint32 i = 0; i < sd.uniform_count; i++)
+		{
+			auto& u = sd.uniforms[i];
+			if (u.name == name && u.type == type && u.uniform_type == uniform_type)
+			{
+				return u.data_offset;
+			}
+		}
+		// not found
+		return -1;
+	}
+
 }} // arc::renderer
 
 

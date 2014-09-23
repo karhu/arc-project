@@ -57,4 +57,23 @@ namespace arc { namespace renderer {
 		COUNT
 	};
 
+	// PrimitiveTypes /////////////////////////////////////////////////////////////////////
+
+	enum class ShaderPrimitiveType : uint8
+	{
+		float_t,
+		vec2_t,
+		vec3_t,
+		vec4_t,
+		mat4x4_t,
+	};
+
+	enum class ShaderUniformType : uint8
+	{
+		Undefined = 0,
+		Instanced = 1,
+		Material = 2,
+		Global = 3,
+	};
+
 }}

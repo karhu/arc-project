@@ -1,5 +1,6 @@
 #pragma once
 
+#include "arc/core/assert.hpp"
 #include "arc/core/numeric_types.hpp"
 #include "arc/core/compatibility.hpp"
 
@@ -27,6 +28,9 @@ namespace arc
 
         /// element count
         uint64 size() const;
+	public:
+		void trim_front(uint32 n);
+		void trim_back(uint32 n);
 
     private:
         T* _data = nullptr;
@@ -79,6 +83,22 @@ namespace arc
     {
         return _size;
     }
+
+	template<typename T> inline
+	void Slice<T>::trim_front(uint32 n)
+	{
+		ARC_ASSERT(n <= _size, "Trim value larger than buffer length");
+		_data += n;
+		_size -= n;
+	}
+
+	template<typename T> inline
+	void Slice<T>::trim_back(uint32 n)
+	{
+		ARC_ASSERT(n <= _size, "Trim value larger than buffer length");
+		_size -= n;
+	}
+
 
 	// range based for-loop support /////////////////////////////////////////////////////
 

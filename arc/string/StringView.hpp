@@ -1,6 +1,7 @@
 #pragma once
 
 #include "arc/core/numeric_types.hpp"
+#include "arc/collections/Slice.hpp"
 
 namespace arc
 {
@@ -40,5 +41,7 @@ namespace arc
         const char* _str = nullptr;
         uint32 _length = 0;
     };
+
+	bool write_string(Slice<char>& buffer, StringView v);
 
 } // namespace arc

@@ -103,11 +103,11 @@ inline void renderer_example()
 
 	// main loop //
 
-	int32 counter = 15;
+	int32 counter = 30;
 	bool stop = false;
 	using namespace arc::input;
 
-	while (counter > 0 && !stop)
+	while ((counter > 0 && !stop) )
 	{
 		gl::clear_color(0.55f, 0.55f, 0.65f, 1.0f);
 		gl::clear(gl::ClearBufferBits::Color | gl::ClearBufferBits::Depth);
@@ -119,7 +119,7 @@ inline void renderer_example()
 		// submit
 		auto rb = r.render_bucket_create(20, 20 * 16 * sizeof(float));
 		_CHECK(rb != nullptr, "invalid RenderBucket");
-		for (uint32 i = 0; i < 20; i++)
+		for (uint32 i = 0; i < 25; i++)
 		{
 			auto buffer = rb->add(id_shader, id_geometry_plane, 0);
 			_CHECK(buffer.valid(), "draw unsuccessful");

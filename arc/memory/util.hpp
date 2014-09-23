@@ -100,7 +100,9 @@ namespace arc { namespace memory { namespace util
 	template<typename W, typename T>
 	T forward_align(T value, W alignment)
 	{
-		return (1 + (value - 1) / alignment) * alignment;
+		int64 v = value+alignment-1;
+		int64 f = v / alignment;
+		return f * alignment;
 
 		/*
 			uint32 mod = begin % alignment;

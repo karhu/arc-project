@@ -1,0 +1,35 @@
+﻿Build started 20.09.2014 20:34:07.
+     1>Project "C:\Users\Adrian\documents\visual studio 2013\Projects\arc-project\arc\arc.vcxproj" on node 3 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I..\external\include /I..\ /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _LIB /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt memory\LinearAllocator.cpp string\write_string.cpp util\IndexPool.cpp
+         LinearAllocator.cpp
+     1>C:\Users\Adrian\documents\visual studio 2013\Projects\arc-project\arc/memory/util.hpp(105): warning C4244: 'return' : conversion from 'arc::int64' to 'size_t', possible loss of data
+                 memory\LinearAllocator.cpp(37) : see reference to function template instantiation 'T arc::memory::util::forward_align<arc::uint32,size_t>(T,W)' being compiled
+                 with
+                 [
+                     T=size_t
+         ,            W=arc::uint32
+                 ]
+         write_string.cpp
+     1>string\write_string.cpp(34): warning C4244: 'argument' : conversion from 'arc::uint64' to 'size_t', possible loss of data
+     1>string\write_string.cpp(40): warning C4244: 'argument' : conversion from 'arc::uint64' to 'size_t', possible loss of data
+     1>string\write_string.cpp(46): warning C4244: 'argument' : conversion from 'arc::uint64' to 'size_t', possible loss of data
+         IndexPool.cpp
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Adrian\documents\visual studio 2013\Projects\arc-project\Release\arc.lib" /NOLOGO /LTCG Release\assert.obj
+         Release\buffer_writer.obj
+         Release\log.obj
+         Release\State.obj
+         Release\Allocator.obj
+         Release\LinearAllocator.obj
+         Release\String.obj
+         Release\StringView.obj
+         Release\write_string.obj
+         Release\util.obj
+         Release\IndexPool.obj
+         arc.vcxproj -> C:\Users\Adrian\documents\visual studio 2013\Projects\arc-project\Release\arc.lib
+     1>Done Building Project "C:\Users\Adrian\documents\visual studio 2013\Projects\arc-project\arc\arc.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.91

@@ -1,3 +1,4 @@
+#pragma once
 
 #include "arc/core/numeric_types.hpp"
 #include "arc/string/String.hpp"
@@ -5,12 +6,24 @@
 #include "arc/gl/types.hpp"
 #include "arc/gl/error_checking.hpp"
 
+//#define ARC_GL_DEBUG_OBSERVE
+
+#ifdef ARC_GL_DEBUG_OBSERVE
+#include "debug.hpp"
+#endif
+
+
 namespace arc { namespace gl {
 
 inline void* map_buffer_range(BufferType target, ptrdiff_t offset, ptrdiff_t length, BufferAccess access)
 {
     ARC_GL_CLEAR_ERRORS();
     auto result = glMapBufferRange((GLenum)target,offset,length,(GLbitfield)access);
+
+	#ifdef ARC_GL_DEBUG_OBSERVE
+	gl_observer->map_buffer_range(result, target, offset, length, access);
+	#endif
+
     ARC_GL_CHECK_FOR_ERRORS();
     return result;
 }
@@ -19,6 +32,11 @@ inline void flush_buffer_range(BufferType target, ptrdiff_t offset, ptrdiff_t le
 {
     ARC_GL_CLEAR_ERRORS();
     glFlushMappedBufferRange((GLenum)target,offset,length);
+
+	#ifdef ARC_GL_DEBUG_OBSERVE
+	gl_observer->flush_buffer_range(target, offset, length);
+	#endif
+
     ARC_GL_CHECK_FOR_ERRORS();
 }
 
@@ -63,6 +81,7 @@ inline void buffer_storage(BufferType target, uint32 size, const void* data, Buf
     glBufferStorage((GLenum)target, size, data, (GLbitfield)flags);
     ARC_GL_CHECK_FOR_ERRORS();
 }
+
 ///////////////////////////////////////////////////////////////
 // various                                                   //
 ///////////////////////////////////////////////////////////////

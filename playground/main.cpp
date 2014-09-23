@@ -16,6 +16,7 @@
 #include "input.hpp"
 
 #include "arc/gl/functions.hpp"
+#include "arc/gl/meta.hpp"
 #include "arc/math/vectors.hpp"
 
 #include "entity.hpp"
@@ -138,7 +139,26 @@ struct TestHandler
 
 int main(int argc, char** argv)
 {
+	std::cout << argv[0] << std::endl;
+
+	StringView executable(argv[0], 0, arc::cstr::length(argv[0], 1024));
+	StringView path = string::remove_trailing(executable, [](char c) {
+		switch (c)
+		{
+		case '/': return false;
+		case '\\': return false;
+		default: return true;
+		}
+	});
+
+	std::cout.write(path.c_str(), path.length());
+	std::cout << std::endl;
+
 	std::cout << "<begin>" << std::endl;
+
+	using PH = meta::enum_helper < gl::Primitive > ;
+
+	std::cout << PH::type_name().c_str() << "::" << PH::value_name(PH::from_index(5)).c_str() << std::endl;
 
 	uint32 r0 = 0;
 	uint32 r1 = 245;
@@ -174,7 +194,7 @@ int main(int argc, char** argv)
 	shader_manager.register_vertex_attribute("data_index", engine::VertexInputType::Unsigned, 4, 10);
 
 	//auto shader = shader_manager.create_from_file("shader.lua");
-	auto shader = shader_manager.create_from_file("example_shader.lua");
+	auto shader = shader_manager.create_from_file("C:/Users/Adrian/Documents/Visual Studio 2013/Projects/arc-project/Debug/example_shader.lua");
 	g_state.shader_id = shader.value();
 
 	// experiment //////////////////////////////////////////////////////////////////////
@@ -198,7 +218,7 @@ int main(int argc, char** argv)
 
 	using namespace arc::input;
 
-	while (counter > 0 && !stop)
+	while ((counter > 0 && !stop ))
 	{
 		engine::deprecated_update();
 		render();
@@ -784,6 +804,8 @@ void draw()
 	gl::bind_vertex_array(0);
 }
 
+#include "state.hpp"
+
 void draw_v2()
 {
 	// TODO sort and split by:
@@ -859,9 +881,20 @@ void draw_v2()
 	auto& layout = DefaultVertexData::Layout();
 
 	gl::bind_buffer(gl::BufferType::ElementArray, g_state.vb_id);
-	//gl::bind_buffer(gl::BufferType::Array, g_state.vb_id);
+	gl::bind_buffer(gl::BufferType::Array, 0);
 
 	gl::bind_vertex_buffer(5, g_state.vb_id, 0, layout.stride());
+
+	hc_gl_stuff.di_buffer = g_state.dib_id;
+	hc_gl_stuff.di_data = g_state.dib_data;
+	hc_gl_stuff.vao = g_state.vao_id;
+	hc_gl_stuff.ea_buffer = g_state.vb_id;
+	hc_gl_stuff.vb_binding_idx = 5;
+	hc_gl_stuff.vb = g_state.vb_id;
+	hc_gl_stuff.vb_stride = layout.stride();
+
+	hc_gl_stuff.program = g_state.shader_id;
+	hc_gl_stuff.di_cmd_count = g_state.n_draw_commands;
 
 
 	gl::use_program(g_state.shader_id);
