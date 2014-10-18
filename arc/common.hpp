@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <tuple>
 
 #include "core/compatibility.hpp"
 
@@ -34,6 +35,12 @@ namespace arc
     {
         class Allocator;
     }
+}
+
+namespace arc
+{
+	using std::tie;
+	using std::tuple;
 }
 
 // common includes

@@ -8,6 +8,8 @@
 
 #include "RendererBase.hpp"
 
+#include "gl44/Shader.hpp"
+
 namespace arc { namespace renderer {
 
 	class Renderer_GL44;
@@ -139,6 +141,8 @@ namespace arc { namespace renderer {
 	private:
 		memory::LinearAllocator m_frame_alloc;
 		Counter32 m_frame_counter;
+	private:
+		gl44::ShaderBackend m_shader_backend;
 	private:
 		struct VertexAtt
 		{

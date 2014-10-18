@@ -97,7 +97,7 @@ inline void renderer_example()
 	}
 
 	// create shader
-	id_shader = r.shader_create("example_shader.lua");
+	id_shader = r.shader_create("shader.lua");
 	_CHECK(id_shader != INVALID_SHADER_ID, "invalid ShaderID");
 
 

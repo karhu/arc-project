@@ -54,5 +54,12 @@ arc/Debug/vc120.pdb
 Debug/*
 external/*
 *.ipch
-playground/Debug/*
+
 Release/*
+
+*.log
+
+arc/Release/*
+arc/Debug/*
+playground/Release/*
+playground/Debug/*

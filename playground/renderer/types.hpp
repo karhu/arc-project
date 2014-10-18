@@ -61,11 +61,18 @@ namespace arc { namespace renderer {
 
 	enum class ShaderPrimitiveType : uint8
 	{
+		none_t,
 		float_t,
 		vec2_t,
 		vec3_t,
 		vec4_t,
+		mat2x2_t,
+		mat3x3_t,
 		mat4x4_t,
+		uint_t,
+		uvec2_t,
+		uvec3_t,
+		uvec4_t,
 	};
 
 	enum class ShaderUniformType : uint8

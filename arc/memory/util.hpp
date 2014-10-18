@@ -79,7 +79,7 @@ namespace arc { namespace memory { namespace util
         }
     }
 
-    template<typename T> inline
+    template<typename T> inline 
     void init_elements(void* data, uint32 n)
     {
         if (std::is_trivial<T>::value)
@@ -97,12 +97,12 @@ namespace arc { namespace memory { namespace util
         }
     }
 
-	template<typename W, typename T>
+	template<typename W, typename T> inline
 	T forward_align(T value, W alignment)
 	{
 		int64 v = value+alignment-1;
 		int64 f = v / alignment;
-		return f * alignment;
+		return static_cast<T>(f * alignment);
 
 		/*
 			uint32 mod = begin % alignment;
@@ -111,7 +111,7 @@ namespace arc { namespace memory { namespace util
 		*/
 	}
 
-	template<typename W>
+	template<typename W> inline
 	void* forward_align_ptr(void* value, W alignment)
 	{
 		return (void*)((1 + ((size_t)value - 1) / alignment) * alignment);
@@ -123,10 +123,15 @@ namespace arc { namespace memory { namespace util
 		*/
 	}
 
-	template<typename W>
+	template<typename W> inline
 	void* ptr_add(void* ptr, W v)
 	{
 		return ((char*)ptr) + v;
+	}
+
+	inline void copy(void* from, void* to, uint32 byte_count)
+	{
+		std::memcpy(to, from, byte_count);
 	}
 
 }}} // namespace arc::memory::util

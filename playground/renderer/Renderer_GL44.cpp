@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include <iostream>
+
 namespace arc { namespace renderer {
 
 	struct tag_gl44
@@ -163,6 +165,13 @@ namespace arc { namespace renderer {
 
 		// shader /////////////////////////////////////////////
 		{
+			bool success = m_shader_backend.initialize(config);
+			if (!success)
+			{
+				LOG_ERROR(tag_gl44, "Error initializing shader backend.");
+				return false;
+			}
+
 			uint32 last_id_before_increment = 16;
 			uint32 id_size_increment = 16;
 
@@ -170,7 +179,7 @@ namespace arc { namespace renderer {
 			m_lua.open_standard_libs();
 
 			// load custom lua library
-			bool ok = m_lua.execute_file("shader_framework.lua");
+			bool ok = m_lua.execute_file("shader_framework_0.2.lua");
 			if (!ok)
 			{
 				LOG_ERROR(tag_gl44, "Could not load: shader_framework.lua");
@@ -254,6 +263,8 @@ namespace arc { namespace renderer {
 
 		// shader ////////////////////////////////////////////
 		{
+			m_shader_backend.finalize();
+
 			m_shader_indices.finalize();
 			m_shader_data.finalize();
 		}
@@ -605,6 +616,9 @@ namespace arc { namespace renderer {
 			return INVALID_SHADER_ID;
 		}
 
+		std::cout << vertex_source.c_str() << std::endl;
+		std::cout << fragment_source.c_str() << std::endl;
+
 		// OpenGL part //
 
 		uint32 vert_id = gl::create_shader(gl::ShaderType::Vertex);
@@ -647,7 +661,7 @@ namespace arc { namespace renderer {
 
 		// shader vertex attributes
 		uint32 next_location = 0;
-		auto inputs = config.select("vertex_input");
+		auto inputs = config.select("vertex").select("input");
 		for (auto& v : lua::each_value(inputs))
 		{
 			// get the pretty name and hash it
@@ -657,7 +671,7 @@ namespace arc { namespace renderer {
 
 			v.select(2).get(name);
 			// get the mangled name
-			v.select("src_name").get(mangled_name);
+			v.select("gen_name").get(mangled_name);
 			v.select("is_float").get(is_float);
 
 			gl::bind_attribute_location(program_id, next_location, mangled_name.c_str());
