@@ -142,6 +142,7 @@ namespace arc { namespace engine
 			"GL_ARB_multi_draw_indirect",
 			"GL_ARB_shader_draw_parameters",
 			"GL_ARB_shader_subroutine",
+			"GL_ARB_enhanced_layouts",
 		};
 
 		std::cout << "Supported OpenGL extensions: \n";

@@ -27,6 +27,13 @@ namespace arc { namespace renderer {
 
 		inline bool valid() { return ptr != nullptr; }
 		inline bool valid(size_t min_size) { return valid() && size >= min_size; }
+
+		template <typename T> inline
+		T& access(size_t byte_offset)
+		{
+			ARC_ASSERT(byte_offset + sizeof(T) <= size, "out of bounds access");
+			return *static_cast<T*>(memory::util::ptr_add(ptr, byte_offset));
+		}
 	};
 
 	static const UntypedBuffer INVALID_UNTYPED_BUFFER = UntypedBuffer{ nullptr, 0 };

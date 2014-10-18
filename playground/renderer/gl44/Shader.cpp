@@ -1,10 +1,11 @@
-#include "Shader.hpp"
+#include "shader.hpp"
 
 #include <iostream>
 
 #include "arc/collections/Array.inl"
 #include "arc/gl/functions.hpp"
 #include "arc/memory/util.hpp"
+#include "arc/math/common.hpp"
 
 #include "../RendererConfig.hpp"
 #include "log_tag.hpp"
@@ -13,6 +14,18 @@ namespace arc { namespace renderer { namespace gl44 {
 
 	void InstanceUniformSubmission::batch_begin(uint32 batch_size)
 	{
+		if (!m_current_buffer.mapped)
+		{
+			auto target = gl::BufferType::Uniform;
+			gl::bind_buffer(target, m_current_buffer.gl_id);
+			m_current_buffer.data = gl::map_buffer_range(target, 0, m_max_buffer_size,
+				gl::BufferAccess::Write |
+				gl::BufferAccess::FlushExplicit |
+				gl::BufferAccess::InvalidateBuffer |
+				gl::BufferAccess::Unsynchronized);
+			m_current_buffer.mapped = true;
+		}
+
 		for (auto& b : make_slice(m_blocks, m_block_count))
 		{
 			tie(b.buffer_data, b.gl_id, b.buffer_offset) = request_buffer_memory(b.stride*batch_size);
@@ -25,10 +38,15 @@ namespace arc { namespace renderer { namespace gl44 {
 		auto& cb = m_current_buffer;
 
 		auto available = cb.mapped_end - cb.front;
-		if (available < byte_size) request_new_buffer(byte_size);
+		if (available < byte_size)
+		{
+			// TODO: remember old buffer
+			request_new_buffer(byte_size);
+		}
 
 		auto front = cb.front;
 		cb.front += byte_size;
+		cb.front = memory::util::forward_align(cb.front, m_map_buffer_alignment);
 		auto buffer = mu::ptr_add(cb.data, front);
 
 		return std::make_tuple(buffer, cb.gl_id, front);
@@ -69,6 +87,7 @@ namespace arc { namespace renderer { namespace gl44 {
 			gl::BufferAccess::FlushExplicit |
 			gl::BufferAccess::InvalidateBuffer |
 			gl::BufferAccess::Unsynchronized);
+		cb.mapped = true;
 	}
 
 	void InstanceUniformSubmission::batch_pre_flush(uint32 batch_size)
@@ -91,13 +110,14 @@ namespace arc { namespace renderer { namespace gl44 {
 			gl::bind_buffer(target, cb.gl_id);
 			gl::flush_buffer_range(target, cb.unflushed_begin, size);
 			cb.unflushed_begin = cb.front;
+			gl::unmap_buffer(target);
+			cb.mapped = false;
 		}
 
 		// map buffers
 		for (uint32 i = 0; i < m_block_count; i++)
 		{
 			auto& b = m_blocks[i];
-
 			gl::bind_buffer_range(gl::ShaderBufferTarget::Uniform,
 				b.binding, b.gl_id, b.buffer_offset, b.stride*batch_size);
 		}
@@ -152,6 +172,10 @@ namespace arc { namespace renderer { namespace gl44 {
 		m_block_count = 0;
 		m_current_buffer.data = nullptr;
 
+		m_map_buffer_alignment = gl::get_UNIFORM_BUFFER_OFFSET_ALIGNMENT();
+
+		request_new_buffer(0);
+
 		return true;
 	}
 
@@ -172,7 +196,6 @@ namespace arc { namespace renderer { namespace gl44 {
 
 		return true;
 	}
-
 
 	ShaderID ShaderBackend::create_shader(StringView lua_file_path)
 	{
@@ -295,15 +318,16 @@ namespace arc { namespace renderer { namespace gl44 {
 
 		uint8 type_stride[] = {
 			0,
-			4, 8, 12, 16,
+			16, 16, 16, 16,
 			16, 36, 64,
-			4, 8, 12, 16,
+			16, 16, 16, 16,
 		};
 
 		// instance uniforms
-		auto inst_uniforms = config.select("uniforms").select("instance");
+		auto inst_uniforms = config.select("vertex").select("uniforms").select("instance");
 		uint32 i = 0;
 		uint32 draw_data_offset = 0;
+		uint32 max_block_stride = 0;
 		for (auto& v : lua::each_value(inst_uniforms))
 		{
 			String name;
@@ -317,17 +341,27 @@ namespace arc { namespace renderer { namespace gl44 {
 			v.select("binding").get(binding);
 			v.select("type").get(type);
 			uint32 stride = type_stride[type];
-			draw_data_offset += stride;
-
+			
 			iub.binding = binding;
 			iub.stride = stride;
 			iub.draw_data_offset = draw_data_offset;
+			draw_data_offset += stride;
+
+			max_block_stride = max(max_block_stride, stride);
 
 			iu.block = i;
 			iu.block_offset = 0;
 			iu.name = string_hash32(name);
 			iu.type = static_cast<ShaderPrimitiveType>(type);
+
+			i += 1;
+			// TODO bounds check agains MAX_...
 		}
+		sd.instance_uniform_block_count = i;
+		sd.instance_uniforms_count = i;
+		sd.instance_uniform_draw_data_size = draw_data_offset;
+
+		sd.maximum_batch_size = m_max_uniform_buffer_size / max_block_stride;
 
 		// link shader
 		bool link_success = gl::link_program(program_id);
@@ -398,6 +432,10 @@ namespace arc { namespace renderer { namespace gl44 {
 		m_shader_data.initialize(config.longterm_allocator);
 		ShaderDescription sd;
 		m_shader_data.resize(1 + last_id_before_increment, sd);
+
+		auto success = m_iu_submission.initialize(config);
+
+		return success;
 	}
 
 	bool ShaderBackend::finalize()
@@ -405,7 +443,31 @@ namespace arc { namespace renderer { namespace gl44 {
 		m_shader_indices.finalize();
 		m_shader_data.finalize();
 
-		return true;
+		auto ok = m_iu_submission.finalize();
+
+		return ok;
+	}
+
+	int32 ShaderBackend::get_uniform_offset(ShaderID shader_id, ShaderUniformType uniform_type, ShaderPrimitiveType type, StringHash32 name)
+	{
+		ARC_ASSERT(m_shader_indices.valid(shader_id.value()), "Invalid ShaderID");
+		auto& sd = m_shader_data[shader_id.value()];
+
+		if (uniform_type == ShaderUniformType::Instanced)
+		{
+			for (uint32 i = 0; i < sd.instance_uniforms_count; i++)
+			{
+				auto& u = sd.instance_uniforms[i];
+				if (u.name == name && u.type == type)
+				{
+					auto& block = sd.instance_uniform_blocks[u.block];
+					return u.block_offset + block.draw_data_offset;
+				}
+			}
+		}
+
+		// not found
+		return -1;
 	}
 
 

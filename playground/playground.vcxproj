@@ -93,7 +93,7 @@
     <ClInclude Include="input.hpp" />
     <ClInclude Include="Keys.hpp" />
     <ClInclude Include="renderer\gl44\log_tag.hpp" />
-    <ClInclude Include="renderer\gl44\Shader.hpp" />
+    <ClInclude Include="renderer\gl44\shader.hpp" />
     <ClInclude Include="renderer\mesh.hpp" />
     <ClInclude Include="renderer\renderer.hpp" />
     <ClInclude Include="renderer\RendererBase.hpp" />
@@ -114,7 +114,7 @@
     <ClCompile Include="GeometryManager.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderer\gl44\Shader.cpp" />
+    <ClCompile Include="renderer\gl44\shader.cpp" />
     <ClCompile Include="renderer\mesh.cpp" />
     <ClCompile Include="renderer\renderer.cpp" />
     <ClCompile Include="renderer\Renderer_GL44.cpp" />

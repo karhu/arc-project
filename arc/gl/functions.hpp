@@ -17,7 +17,7 @@ namespace arc { namespace gl {
 
 inline void* map_buffer_range(BufferType target, ptrdiff_t offset, ptrdiff_t length, BufferAccess access)
 {
-    ARC_GL_CLEAR_ERRORS();
+	ARC_GL_CLEAR_ERRORS();
     auto result = glMapBufferRange((GLenum)target,offset,length,(GLbitfield)access);
 
 	#ifdef ARC_GL_DEBUG_OBSERVE
@@ -442,5 +442,17 @@ inline WaitSyncResult client_wait_sync(GLsync sync, WaitSyncFlags flags, uint64 
     return (WaitSyncResult) r;
 }
 
+///////////////////////////////////////////////////////////////
+// get                                                       //
+///////////////////////////////////////////////////////////////
+
+inline int32 get_UNIFORM_BUFFER_OFFSET_ALIGNMENT()
+{
+	ARC_GL_CLEAR_ERRORS();
+	int32 value;
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &value);
+	ARC_GL_CHECK_FOR_ERRORS();
+	return value;
+}
 
 }} // namespace arc::gl

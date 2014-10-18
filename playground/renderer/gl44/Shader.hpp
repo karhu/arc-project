@@ -57,6 +57,9 @@ namespace gl44 {
 		uint32 instance_uniforms_count = 0;
 
 		uint32 gl_program_id;
+		uint32 instance_uniform_draw_data_size;
+
+		uint32 maximum_batch_size = 1;
 	};
 
 	/* Helper class managing the Instance Uniform state while submitting draw calls. */
@@ -89,6 +92,7 @@ namespace gl44 {
 			uint32 mapped_end;
 			uint32 front;
 			void*  data = nullptr;
+			bool   mapped = false;
 		};
 
 		struct UsedBuffer
@@ -106,10 +110,10 @@ namespace gl44 {
 		BlockState m_blocks[MAX_UNIFORM_BLOCKS];
 		uint32     m_block_count = 0;
 		uint32	   m_max_buffer_size = 1024 * 1024;		// 1MB;
+		uint32     m_map_buffer_alignment;
 		Array<uint32> m_available_buffers;				// OpenGL ids of unused buffers
 		BufferState m_current_buffer;					// buffer memory requests are taken from this buffer until it is filled
 		Array<UsedBuffer> m_used_buffers;				// buffers that need to be flushed before rendering and orphaned after rendering
-
 	};
 
 	/* Main class managing everything shader related. */
@@ -121,10 +125,14 @@ namespace gl44 {
 	public:
 		ShaderID create_shader(StringView lua_file_path);
 	public:
+		int32 get_uniform_offset(ShaderID shader_id, ShaderUniformType uniform_type, ShaderPrimitiveType type, StringHash32 name);
+	public:
 		Array<ShaderDescription> m_shader_data;
 		IndexPool32 m_shader_indices;
 	public:
 		InstanceUniformSubmission m_iu_submission;
+	public:
+		uint32 m_max_uniform_buffer_size = 16 * 1024; // TODO: measure this at runtime (GL_MAX_UNIFORM_BLOCK_SIZE)
 	public:
 		lua::State m_lua;
 		lua::Value m_fun_load_file;

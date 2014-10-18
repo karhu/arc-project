@@ -117,12 +117,41 @@ inline void renderer_example()
 		r.update_frame_begin();
 
 		// submit
-		auto rb = r.render_bucket_create(20, 20 * 16 * sizeof(float));
+		auto rb = r.render_bucket_create(25, 25 * 20 * sizeof(float));
 		_CHECK(rb != nullptr, "invalid RenderBucket");
+
+		auto color_offset = r.shader_get_uniform_offset(
+			id_shader,
+			ShaderUniformType::Instanced,
+			ShaderPrimitiveType::vec3_t,
+			SH32("instance.color"));
+
+		_CHECK(color_offset != -1, "shader_get_uniform_offset unsuccessful");
+
+		vec3 colors[] = {
+			vec3(0.3f, 0.6f, 0.9f),
+			vec3(0.6f, 0.9f, 0.3f),
+			vec3(0.9f, 0.3f, 0.6f),
+		};
+
+		vec3 colors2[] = {
+			vec3(0.3f, 0.6f, 0.9f),
+			vec3(0.3f, 0.9f, 0.6f),
+			vec3(0.6f, 0.9f, 0.3f),
+			vec3(0.6f, 0.3f, 0.9f),
+			vec3(0.9f, 0.3f, 0.6f),
+			vec3(0.9f, 0.6f, 0.3f),
+		};
+
 		for (uint32 i = 0; i < 25; i++)
 		{
 			auto buffer = rb->add(id_shader, id_geometry_plane, 0);
+			if (!buffer.valid())
+			{
+				std::cout << "error" << std::endl;
+			}
 			_CHECK(buffer.valid(), "draw unsuccessful");
+			buffer.access<vec3>(color_offset) = colors[i%3];
 		}
 		r.render_bucket_submit(rb);
 
@@ -135,10 +164,6 @@ inline void renderer_example()
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		--counter;
 	}
-
-	
-	
-	
 
 	// finalize renderer
 	r.finalize();

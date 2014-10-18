@@ -53,7 +53,7 @@ namespace arc { namespace renderer {
 	public:
 		virtual ShaderID shader_create(StringView lua_file_path) = 0;
 		//virtual void shader_destroy(ShaderID id) = 0;
-		virtual int32 shader_get_uniform_offset(ShaderID shader, ShaderUniformType uniform_type, PrimitiveType type, StringHash32 name) = 0;
+		virtual int32 shader_get_uniform_offset(ShaderID shader, ShaderUniformType uniform_type, ShaderPrimitiveType type, StringHash32 name) = 0;
 	};
 
 }} // namespace arc::renderer

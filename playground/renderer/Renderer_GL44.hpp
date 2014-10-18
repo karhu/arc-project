@@ -4,11 +4,10 @@
 #include "arc/collections/HashMap.hpp"
 #include "arc/memory/LinearAllocator.hpp"
 #include "arc/util/Counter.hpp"
-#include "arc/lua/State.hpp"
 
 #include "RendererBase.hpp"
 
-#include "gl44/Shader.hpp"
+#include "gl44/shader.hpp"
 
 namespace arc { namespace renderer {
 
@@ -37,6 +36,8 @@ namespace arc { namespace renderer {
 		uint32 m_max_command_count;
 		uint32 m_count;
 		Renderer_GL44* m_renderer;
+	private:
+		static const uint32 DRAW_DATA_ALIGNMENT = 8;
 	private:
 		friend class Renderer_GL44;
 	};
@@ -77,7 +78,7 @@ namespace arc { namespace renderer {
 	public:
 		ShaderID shader_create(StringView lua_file_path) override;
 		//void shader_destroy(ShaderID id) override;
-		int32 shader_get_uniform_offset(ShaderID shader, ShaderUniformType uniform_type, PrimitiveType type, StringHash32 name) override;
+		int32 shader_get_uniform_offset(ShaderID shader, ShaderUniformType uniform_type, ShaderPrimitiveType type, StringHash32 name) override;
 	private:
 		bool m_is_initialized = false;
 	private:
@@ -144,44 +145,6 @@ namespace arc { namespace renderer {
 	private:
 		gl44::ShaderBackend m_shader_backend;
 	private:
-		struct VertexAtt
-		{
-			StringHash32 name;
-			bool  is_float_type;
-			uint8 elements;
-			uint8 location;
-		};
-
-		struct Uniform
-		{
-			StringHash32 name;
-			PrimitiveType type;
-			ShaderUniformType uniform_type;
-			
-			uint8 data_offset;		// offset in the drawcall data buffer
-
-			uint8 buffer_offset;	// offset in the gpu uniform buffer
-			uint8 buffer_stride;	// stride in the gpu uniform buffer
-			uint8 buffer_binding;   // shader binding point of the buffer
-		};
-
-		struct ShaderData
-		{
-			VertexAtt vertex_attributes[16];
-			uint32 vertex_attribute_count = 0;
-
-			Uniform uniforms[16];
-			uint32 uniform_count = 0;
-
-			uint32 gl_id;
-		};
-
-		Array<ShaderData> m_shader_data;
-		IndexPool32 m_shader_indices;
-		lua::State m_lua;
-		lua::Value m_fun_load_file;
-		lua::Value m_fun_gen_code;
-	private:
 		void shader_grab_instance_data(uint32 material_id, void* cmd_data);
 	private:
 		struct RenderState
@@ -192,7 +155,8 @@ namespace arc { namespace renderer {
 			PrimitiveType primitive_type = PrimitiveType::Unknown;
 			VertexLayout* vertex_layout = nullptr;
 		};
-		void render_state_switch(RenderState& current, uint64 sort_key, DefaultCommandData& cmd_data);
+		uint32 render_state_switch(RenderState& current, RenderCommand_GL44* commands, uint32 max_count);
+
 		uint32 m_gl_dib;
 		UntypedBuffer m_gl_dib_data;
 	};

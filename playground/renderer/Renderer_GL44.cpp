@@ -164,60 +164,13 @@ namespace arc { namespace renderer {
 		}
 
 		// shader /////////////////////////////////////////////
+		bool success = m_shader_backend.initialize(config);
+		if (!success)
 		{
-			bool success = m_shader_backend.initialize(config);
-			if (!success)
-			{
-				LOG_ERROR(tag_gl44, "Error initializing shader backend.");
-				return false;
-			}
-
-			uint32 last_id_before_increment = 16;
-			uint32 id_size_increment = 16;
-
-			// load lua standard libs
-			m_lua.open_standard_libs();
-
-			// load custom lua library
-			bool ok = m_lua.execute_file("shader_framework_0.2.lua");
-			if (!ok)
-			{
-				LOG_ERROR(tag_gl44, "Could not load: shader_framework.lua");
-				return false;
-			}
-
-			// preload first lua function
-			m_fun_load_file = m_lua.select("read_shader_config");
-			if (!m_fun_load_file.valid())
-			{
-				LOG_ERROR(tag_gl44, "Could not find lua function: read_shader_config");
-				return false;
-			}
-
-			// preload second lua function
-			m_fun_gen_code = m_lua.select("generate_source_code");
-			if (!m_fun_gen_code.valid())
-			{
-				LOG_ERROR(tag_gl44, "Could not find lua function: generate_source_code");
-				return false;
-			}
-
-			m_shader_indices.initialize(
-				config.longterm_allocator,
-				last_id_before_increment,
-				id_size_increment,
-				10000,
-				[this](uint32 new_size)
-				{
-					ShaderData sd; sd.vertex_attribute_count = 0;
-					m_shader_data.resize(new_size, sd);
-				}
-			);
-
-			m_shader_data.initialize(config.longterm_allocator);
-			ShaderData sd; sd.vertex_attribute_count = 0;
-			m_shader_data.resize(1 + last_id_before_increment, sd);
+			LOG_ERROR(tag_gl44, "Error initializing shader backend.");
+			return false;
 		}
+
 
 		// return success /////////////////////////////////////
 		m_is_initialized = true;
@@ -261,13 +214,8 @@ namespace arc { namespace renderer {
 			m_geometry_config_data.finalize();
 		}
 
-		// shader ////////////////////////////////////////////
-		{
-			m_shader_backend.finalize();
-
-			m_shader_indices.finalize();
-			m_shader_data.finalize();
-		}
+		// shader backend
+		m_shader_backend.finalize();
 
 		m_is_initialized = false;
 	}
@@ -546,7 +494,7 @@ namespace arc { namespace renderer {
 		auto rc = m_frame_alloc.create<RenderBucket_GL44>();
 		if (rc == nullptr) ARC_FAIL_GRACEFULLY_MESSAGE("Could not allocate RenderBucket.");
 
-		uint32 total_data_size = max_data_size;
+		uint32 total_data_size = max_data_size + RenderBucket_GL44::DRAW_DATA_ALIGNMENT*max_command_count;
 		rc->m_data_begin = (char*)m_frame_alloc.allocate(total_data_size, 8);
 		rc->m_data_current = rc->m_data_begin;
 		rc->m_data_end = rc->m_data_begin + total_data_size;
@@ -578,145 +526,7 @@ namespace arc { namespace renderer {
 
 	ShaderID Renderer_GL44::shader_create(StringView lua_file_path)
 	{
-		uint32 idx = m_shader_indices.create();
-
-		// load & run lua script describing the shader
-		lua::Value config = m_fun_load_file.call(lua_file_path);
-		if (config.is_error())
-		{
-			String msg; config.get(msg);
-			LOG_INFO(tag_gl44, "Error loading lua shader config: \n", msg.c_str());
-			m_shader_indices.release(idx);
-			return INVALID_SHADER_ID;
-		}
-
-		// generate shader source strings
-		lua::Value sources = m_fun_gen_code.call(config);
-		if (sources.is_error())
-		{
-			String msg; sources.get(msg);
-			LOG_INFO(tag_gl44, "Error generating shader code: \n", msg.c_str());
-			m_shader_indices.release(idx);
-			return INVALID_SHADER_ID;
-		}
-
-		arc::String vertex_source;
-		if (!sources.select("vertex").get(vertex_source))
-		{
-			LOG_ERROR(tag_gl44, "Could not retrieve vertex shader code");
-			m_shader_indices.release(idx);
-			return INVALID_SHADER_ID;
-		}
-
-		arc::String fragment_source;
-		if (!sources.select("fragment").get(fragment_source))
-		{
-			LOG_ERROR(tag_gl44, "Could not retrieve fragment shader code");
-			m_shader_indices.release(idx);
-			return INVALID_SHADER_ID;
-		}
-
-		std::cout << vertex_source.c_str() << std::endl;
-		std::cout << fragment_source.c_str() << std::endl;
-
-		// OpenGL part //
-
-		uint32 vert_id = gl::create_shader(gl::ShaderType::Vertex);
-		uint32 frag_id = gl::create_shader(gl::ShaderType::Fragment);
-
-		const char* source_code[2] = { vertex_source.c_str(), fragment_source.c_str() };
-		int32 lengths[2] = { (int32)vertex_source.length(), (int32)fragment_source.length() };
-
-		gl::shader_source(vert_id, 1, source_code + 0, lengths + 0);
-		gl::shader_source(frag_id, 1, source_code + 1, lengths + 1);
-
-		if (!gl::compile_shader(vert_id))
-		{
-			auto log = gl::shader_info_log(vert_id);
-			LOG_INFO(tag_gl44, "Error compiling vertex shader: \n", log.c_str());
-
-			gl::delete_shader(vert_id);
-			gl::delete_shader(frag_id);
-			m_shader_indices.release(idx);
-			return INVALID_SHADER_ID;
-		}
-
-		if (!gl::compile_shader(frag_id))
-		{
-			auto log = gl::shader_info_log(frag_id);
-			LOG_INFO(tag_gl44, "Error compiling fragment shader: \n", log.c_str());
-
-			gl::delete_shader(vert_id);
-			gl::delete_shader(frag_id);
-			m_shader_indices.release(idx);
-			return INVALID_SHADER_ID;
-		}
-
-		// create program
-		uint32 program_id = gl::create_program();
-		ARC_ASSERT(program_id != 0, "Could not create shader program.");
-
-		gl::attach_shader(program_id, vert_id);
-		gl::attach_shader(program_id, frag_id);
-
-		// shader vertex attributes
-		uint32 next_location = 0;
-		auto inputs = config.select("vertex").select("input");
-		for (auto& v : lua::each_value(inputs))
-		{
-			// get the pretty name and hash it
-			String name;
-			String mangled_name;
-			bool is_float;
-
-			v.select(2).get(name);
-			// get the mangled name
-			v.select("gen_name").get(mangled_name);
-			v.select("is_float").get(is_float);
-
-			gl::bind_attribute_location(program_id, next_location, mangled_name.c_str());
-
-			auto& a = m_shader_data[idx].vertex_attributes[next_location];
-			a.elements = 0;
-			a.is_float_type = is_float;
-			a.location = next_location;
-			a.name = string_hash32(name);
-
-			next_location += 1;
-		}
-		m_shader_data[idx].vertex_attribute_count = next_location;
-
-
-
-		// shader instance uniforms
-#if 0
-		auto inputs = config.select("vertex_uniforms").select("instance");
-		for (auto& v : lua::each_value(inputs))
-		{
-			//TODO
-		}
-#endif
-
-		// link shader
-		bool link_success = gl::link_program(program_id);
-		gl::detach_shader(program_id, vert_id);
-		gl::detach_shader(program_id, frag_id);
-		gl::delete_shader(vert_id);
-		gl::delete_shader(frag_id);
-
-		if (!link_success)
-		{
-			auto log = gl::shader_info_log(vert_id);
-			LOG_INFO(tag_gl44, "Error linking shader: \n", log.c_str());
-			gl::delete_program(program_id);
-			m_shader_indices.release(idx);
-			return INVALID_SHADER_ID;
-		}
-
-		m_shader_data[idx].gl_id = program_id;
-		LOG_INFO(tag_gl44, "Loaded shader: ", lua_file_path);
-
-		return ShaderID(idx);
+		return m_shader_backend.create_shader(lua_file_path);
 	}
 
 	void Renderer_GL44::update_frame_begin()
@@ -726,12 +536,15 @@ namespace arc { namespace renderer {
 		m_submitted_render_buckets.clear();
 	}
 
-	void Renderer_GL44::render_state_switch(RenderState& current, uint64 sort_key, DefaultCommandData& cmd_data)
+	uint32 Renderer_GL44::render_state_switch(RenderState& current, RenderCommand_GL44* commands, uint32 max_count)
 	{
-		auto sk = SortKey_GL44::Decode(sort_key).fields;
-		auto& gd = m_geometry_data[cmd_data.geometry.value()];
+		auto batch_key = SortKey_GL44::Decode(commands->sort_key);
+		auto cmd_data = static_cast<DefaultCommandData*>(commands->data);
+		auto sk = batch_key.fields;
+
+		auto& gd = m_geometry_data[cmd_data->geometry.value()];
 		auto& gcd = m_geometry_config_data[gd.geometry_config_id.value()];
-		auto& sd = m_shader_data[sk.material];
+		auto& sd = m_shader_backend.m_shader_data[sk.material];
 
 		current.index_type = gcd.index_type;
 		current.primitive_type = gcd.primitive;
@@ -740,18 +553,36 @@ namespace arc { namespace renderer {
 		bool shader_changed = sk.material != current.shader.value();
 		bool buffer_changed = sk.buffer != (uint8)current.buffer;
 
+		// compute size of next batch
+		uint32 max_batch_size = std::min(max_count, sd.maximum_batch_size);
+		uint32 batch_size = 1;
+		auto batch_key_dm = batch_key; batch_key_dm.fields.depth = 0;
+		for (uint32 i = 1; i < max_batch_size; i++)
+		{
+			// check if this draw call fits into the same draw batch
+			auto current_key_dm = SortKey_GL44::Decode(commands[i].sort_key); 
+			current_key_dm.fields.depth = 0;
+			if (current_key_dm.integer != batch_key_dm.integer) break;
+
+			batch_size += 1;
+		}
+
 		// if the shader has changed
 		if (shader_changed)
 		{
-			gl::use_program(sd.gl_id);
+			gl::use_program(sd.gl_program_id);
 			current.shader = ShaderID(sk.material);
+
+			m_shader_backend.m_iu_submission.set_shader(sd);
 		}
+
+		// instance uniform manager needs to know that a new batch begins
+		m_shader_backend.m_iu_submission.batch_begin(batch_size);
 
 		// if any of the two has changed we need to configure the mapping
 		if (shader_changed || layout_changed)
 		{
-			auto& sd = m_shader_data[sk.material];
-			for (uint32 i = 0; i < sd.vertex_attribute_count; i++)
+			for (uint32 i = 0; i < sd.vertex_attributes_count; i++)
 			{
 				auto& sh_att = sd.vertex_attributes[i];
 
@@ -800,13 +631,14 @@ namespace arc { namespace renderer {
 				gl::bind_buffer(gl::BufferType::ElementArray, gl_buffer);
 				current.buffer = (GeometryBufferType)sk.buffer;
 			}
-			
+
 			gl::bind_vertex_buffer(DEFAULT_BINDING_INDEX_GL, gl_buffer, 0, gcd.layout->stride());
 			current.vertex_layout = gcd.layout;
 		}
 
 		// TODO minimize shader/layout state changes
 
+		return batch_size;
 	}
 
 	gl::Primitive _gl_primitive_type(PrimitiveType t)
@@ -843,17 +675,21 @@ namespace arc { namespace renderer {
 		RenderState current;
 		auto batch_key = SortKey_GL44::Decode(m_render_command_data[0].sort_key);
 		gl::bind_vertex_array(m_vao_gl_ids[0]);
-		render_state_switch(current, batch_key.integer, *(DefaultCommandData*)m_render_command_data[0].data);
+
+		uint32 batch_size; // size of the current batch
+		uint32 draw_index = 0; // index within the current draw batch
+
+		batch_size = render_state_switch(current, m_render_command_data, m_render_command_count);
 
 		// setup draw indirect buffer
 		auto dib_data = make_slice<gl::DrawElementsIndirectCommand>(
 			(gl::DrawElementsIndirectCommand*)m_gl_dib_data.ptr,
 			m_gl_dib_data.size / sizeof(gl::DrawElementsIndirectCommand)
 		);
-		uint32 dib_begin = 0;
-		uint32 dib_count = 0;
 		gl::bind_buffer(gl::BufferType::DrawIndirect, m_gl_dib);
 
+		uint32 dib_begin = 0; // begin offset within the draw indirect buffer
+		
 		// handle each render command
 		for (uint32 i = 0; i < m_render_command_count; i++)
 		{
@@ -865,29 +701,29 @@ namespace arc { namespace renderer {
 
 			auto& cmd = m_render_command_data[i];
 			auto  key = SortKey_GL44::Decode(cmd.sort_key);
-			auto& dcd = *(DefaultCommandData*)m_render_command_data[i].data;
-			auto& g = m_geometry_data[dcd.geometry.value()];
+			auto  dcd = (DefaultCommandData*)m_render_command_data[i].data;
+			auto& g = m_geometry_data[dcd->geometry.value()];
 
-			// mask out depth
-			auto key_dm = key; key_dm.fields.depth = 0;
-			auto batch_key_dm = batch_key; batch_key_dm.fields.depth = 0;
 
 			// render commands differ in more than depth
-			if (key_dm.integer != batch_key_dm.integer)
+			if (draw_index == batch_size)
 			{
 				// render enqueued
+				m_shader_backend.m_iu_submission.batch_pre_flush(batch_size);
 				gl::multi_draw_elements_indirect(
 					_gl_primitive_type(current.primitive_type),
 					_gl_index_type(current.index_type),
 					sizeof(gl::DrawElementsIndirectCommand)*dib_begin,
-					dib_count,
+					batch_size, // number of draw commands that are dispatched
 					sizeof(gl::DrawElementsIndirectCommand)
 					);
-				dib_count = 0;
-				dib_begin += dib_count;
+				m_shader_backend.m_iu_submission.batch_post_flush(batch_size);
+
+				draw_index = 0;
+				dib_begin += batch_size;
 
 				// change render state state
-				render_state_switch(current, cmd.sort_key, dcd);
+				batch_size = render_state_switch(current, m_render_command_data+i, m_render_command_count-i);
 				batch_key = key;
 			}
 
@@ -896,26 +732,26 @@ namespace arc { namespace renderer {
 			draw.count = g.index_count;
 			draw.first_index = g.index_begin_count;
 			draw.base_vertex = g.vertex_begin_count;
-			draw.base_instance = i;
+			draw.base_instance = draw_index;
 			draw.instance_count = 1;
 
-			//shader_grab_instance_data(material_id, cmd.data);
+			// submit instance uniform data
+			m_shader_backend.m_iu_submission.batch_enqueue(draw_index, dcd + 1);
 
-			dib_count += 1;
+			draw_index += 1;
 
 		}
 
 		// render enqueued
+		m_shader_backend.m_iu_submission.batch_pre_flush(batch_size);
 		gl::multi_draw_elements_indirect(
 			_gl_primitive_type(current.primitive_type),
 			_gl_index_type(current.index_type),
 			sizeof(gl::DrawElementsIndirectCommand)*dib_begin,
-			dib_count,
+			draw_index,
 			sizeof(gl::DrawElementsIndirectCommand)
-			);
-
-		dib_count = 0;
-		dib_begin += dib_count;
+		);
+		m_shader_backend.m_iu_submission.batch_post_flush(batch_size);
 
 	}
 
@@ -956,21 +792,9 @@ namespace arc { namespace renderer {
 #endif
 	}
 	
-	int32 Renderer_GL44::shader_get_uniform_offset(ShaderID shader_id, ShaderUniformType uniform_type, PrimitiveType type, StringHash32 name)
+	int32 Renderer_GL44::shader_get_uniform_offset(ShaderID shader_id, ShaderUniformType uniform_type, ShaderPrimitiveType type, StringHash32 name)
 	{
-		ARC_ASSERT(m_shader_indices.valid(shader_id.value()), "Invalid ShaderID");
-		auto& sd = m_shader_data[shader_id.value()];
-
-		for (uint32 i = 0; i < sd.uniform_count; i++)
-		{
-			auto& u = sd.uniforms[i];
-			if (u.name == name && u.type == type && u.uniform_type == uniform_type)
-			{
-				return u.data_offset;
-			}
-		}
-		// not found
-		return -1;
+		return m_shader_backend.get_uniform_offset(shader_id, uniform_type, type, name);
 	}
 
 }} // arc::renderer
@@ -982,16 +806,20 @@ namespace arc { namespace renderer {
 	{
 		auto& cmd = m_commands[m_count];
 
+		auto& gd = m_renderer->m_geometry_data[geometry.value()];
+		auto& sd = m_renderer->m_shader_backend.m_shader_data[shader.value()];
+
 		// allocate the data section
-		cmd.data = memory::util::forward_align_ptr(m_data_current, 8);
+		m_data_current = (char*)memory::util::forward_align_ptr(m_data_current, DRAW_DATA_ALIGNMENT);
+		cmd.data = m_data_current;
 		auto dcd = (Renderer_GL44::DefaultCommandData*)cmd.data;
 
-		uint32 data_size = sizeof(Renderer_GL44::DefaultCommandData);
-		m_data_current += data_size;
+		uint32 data_size = sd.instance_uniform_draw_data_size;
+		auto dcd_size = sizeof(Renderer_GL44::DefaultCommandData);
+		m_data_current += data_size + sizeof(Renderer_GL44::DefaultCommandData);
+		
 
 		if (m_data_current > m_data_end) return INVALID_UNTYPED_BUFFER;
-
-		auto& gd = m_renderer->m_geometry_data[geometry.value()];
 
 		// create the sort key
 		cmd.sort_key = SortKey_GL44::Encode(0, 0, sort_depth, (uint8)gd.buffer_type, shader.value(), gd.geometry_config_id.value());
@@ -1002,7 +830,7 @@ namespace arc { namespace renderer {
 
 		m_count += 1;
 
-		return { dcd + 1, 0 };
+		return{ dcd + 1, data_size };
 	}
 
 }} // arc::renderer

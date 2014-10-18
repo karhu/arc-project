@@ -84,10 +84,10 @@
     <ClInclude Include="state.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\gl44\Shader.hpp">
+    <ClInclude Include="renderer\gl44\log_tag.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\gl44\log_tag.hpp">
+    <ClInclude Include="renderer\gl44\shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -131,7 +131,7 @@
     <ClCompile Include="state.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\gl44\Shader.cpp">
+    <ClCompile Include="renderer\gl44\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
