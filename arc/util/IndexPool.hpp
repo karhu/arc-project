@@ -28,8 +28,9 @@ namespace arc
 	class IndexPool32
 	{
 	public:
-		void initialize(memory::Allocator* alloc, uint32 last_id, uint32 increment, uint32 very_last_id, std::function<void(uint32)> increment_cb);
+		void initialize(memory::Allocator* alloc, uint32 last_id, uint32 increment, uint32 very_last_id, std::function<void(uint32)> increment_cb = nullptr);
 		void finalize();
+		bool is_initialized();
 	public:
 		uint32 create();
 		void release(uint32 h);
@@ -41,6 +42,7 @@ namespace arc
 		uint32  m_last_id = 0;
 		uint32  m_very_last_id = 0;
 		std::function<void(uint32)> m_resize_cb = nullptr;
+		bool m_initialized = false;
 	};
 
 	// macro ///////////////////////////

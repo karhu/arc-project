@@ -1,6 +1,6 @@
 #include "entity.hpp"
 
-#include "engine.hpp"
+#include "../engine.hpp"
 
 #include "arc/memory/Allocator.hpp"
 #include "arc/collections/Array.inl"

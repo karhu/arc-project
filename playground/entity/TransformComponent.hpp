@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "SimpleComponent.hpp"
@@ -37,3 +38,5 @@ namespace arc
 	};
 
 } // namespace arc
+
+#endif

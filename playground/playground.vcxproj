@@ -83,11 +83,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="engine.hpp" />
-    <ClInclude Include="entity.hpp" />
+    <ClInclude Include="entity2\SimpleComponent.hpp" />
+    <ClInclude Include="entity2\entity2.hpp" />
+    <ClInclude Include="entity2\TransformComponent2.hpp" />
+    <ClInclude Include="entity\entity.hpp" />
     <ClInclude Include="entity\common.hpp" />
     <ClInclude Include="entity\SimpleComponent.hpp" />
     <ClInclude Include="entity\SimpleMaterialComponent.hpp" />
     <ClInclude Include="entity\TransformComponent.hpp" />
+    <ClInclude Include="example\example.hpp" />
     <ClInclude Include="example\renderer_ex.hpp" />
     <ClInclude Include="GeometryManager.hpp" />
     <ClInclude Include="input.hpp" />
@@ -104,13 +108,18 @@
     <ClInclude Include="ShaderManager.hpp" />
     <ClInclude Include="state.hpp" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Struct.hpp" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="template_util.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine.cpp" />
-    <ClCompile Include="entity.cpp" />
+    <ClCompile Include="entity2\entity2.cpp" />
+    <ClCompile Include="entity2\SimpleComponent.cpp" />
+    <ClCompile Include="entity2\TransformComponent2.cpp" />
+    <ClCompile Include="entity\entity.cpp" />
     <ClCompile Include="entity\SimpleMaterialComponent.cpp" />
+    <ClCompile Include="example\entity_ex.cpp" />
     <ClCompile Include="GeometryManager.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
@@ -125,6 +134,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Struct.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

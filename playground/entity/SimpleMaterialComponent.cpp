@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include "SimpleMaterialComponent.hpp"
@@ -44,3 +45,4 @@ namespace arc
 		entity::register_callback(entity::CallbackType::RenderMain, 0.0f, &src_cb_render_main);
 	}
 }
+#endif

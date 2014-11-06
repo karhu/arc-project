@@ -125,9 +125,9 @@ namespace arc { namespace renderer {
 				last_id_before_increment,
 				id_size_increment,
 				40000000,
-				[this](uint32 new_size) {
+				[this](uint32 new_last_id) {
 					GeometryData gd; gd.block_size = 0;
-					m_geometry_data.resize(new_size, gd);
+					m_geometry_data.resize(new_last_id+1, gd);
 				}
 			);
 
@@ -151,10 +151,10 @@ namespace arc { namespace renderer {
 				last_id_before_increment,
 				id_size_increment,
 				255,
-				[this](uint32 new_size)
+				[this](uint32 new_last_id)
 				{
 					GeometryConfig gc; gc.layout = nullptr;
-					m_geometry_config_data.resize(new_size, gc);
+					m_geometry_config_data.resize(new_last_id+1, gc);
 				}
 			);
 

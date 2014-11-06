@@ -19,7 +19,7 @@
 #include "arc/gl/meta.hpp"
 #include "arc/math/vectors.hpp"
 
-#include "entity.hpp"
+#include "entity/entity.hpp"
 #include "entity/TransformComponent.hpp"
 #include "entity/SimpleMaterialComponent.hpp"
 
@@ -135,7 +135,10 @@ struct TestHandler
 	static bool iteration(uint32 index, double& user_data) { std::cout << user_data << "  " << index << ": " << sizeof(T) << std::endl; user_data += 1; return true; }
 };
 
-#include "example\renderer_ex.hpp"
+#include "example/renderer_ex.hpp"
+#include "example/example.hpp"
+
+#include "Struct.hpp"
 
 int main(int argc, char** argv)
 {
@@ -176,6 +179,15 @@ int main(int argc, char** argv)
 	arc::log::DefaultLogger default_logger;
 	arc::log::set_logger(default_logger);
 
+	// Struct etc ////////////
+	memory::Mallocator malloc;
+
+
+	SOA<Description> my_struct_of_arrays(&malloc, 512);
+
+	auto& scale = my_struct_of_arrays.get<Description::SCALE>(12);
+
+
 	// init engine /////////////////////////////////////////////////////////////////////
 	engine::initialize(g_config);
 
@@ -214,7 +226,7 @@ int main(int argc, char** argv)
 	
 	int32 counter = 5;
 
-	bool stop = false;
+	bool stop = true;
 
 	using namespace arc::input;
 
@@ -231,7 +243,9 @@ int main(int argc, char** argv)
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+	
 	renderer_example();
+	entity_example();
 
 	// render queue test ///////////////////////////////////////////////////////////////
 
@@ -279,7 +293,7 @@ int main(int argc, char** argv)
 
 
 	// entity test /////////////////////////////////////////////////////////////////////
-
+#if 0
 	entity::initialize(sys_config);
 
 	entity::register_component<TransformComponent>(512);
@@ -323,7 +337,7 @@ int main(int argc, char** argv)
 	entity::call_callbacks(entity::CallbackType::RenderMain);
 
 	entity::finalize();
-
+#endif
 	const int N = 10;
 	int n_ints[N] { 5, 4, 3, 1, 5, 8, 9, 2, 6, 7 };
 	double n_doubles[N] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};

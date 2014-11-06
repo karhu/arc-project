@@ -1,6 +1,7 @@
+#if 0
 #pragma once
 
-#include "../entity.hpp"
+#include "entity.hpp"
 
 namespace arc
 {
@@ -161,3 +162,5 @@ namespace arc
 	}
 
 } // namespace arc
+
+#endif

@@ -6,23 +6,32 @@ namespace arc
 {
 	void IndexPool32::initialize(memory::Allocator* alloc, uint32 last_id, uint32 increment, uint32 very_last_id, std::function<void(uint32)> increment_cb)
 	{
+		if (m_initialized) return;
 		m_free_handles.initialize(alloc, 16);
 		m_next_id = 1;
 		m_last_id = last_id;
 		m_increment = increment;
 		m_very_last_id = very_last_id;
 		m_resize_cb = increment_cb;
+		m_initialized = true;
 	}
 
 	void IndexPool32::finalize()
 	{
-		m_free_handles.finalize();
+		if (!m_initialized) return;
 
+		m_free_handles.finalize();
 		m_next_id = 0;
 		m_very_last_id = 0;
 		m_increment = 0;
 		m_last_id = 0; 
 		m_resize_cb = nullptr;
+		m_initialized = false;
+	}
+
+	bool IndexPool32::is_initialized()
+	{
+		return m_initialized;
 	}
 
 	uint32 IndexPool32::create()
@@ -43,7 +52,7 @@ namespace arc
 			m_last_id += m_increment;
 			m_last_id = std::min(m_last_id, m_very_last_id);
 
-			m_resize_cb(m_last_id);
+			if (m_resize_cb) m_resize_cb(m_last_id);
 		}
 
 		return m_next_id++;

@@ -1,3 +1,5 @@
+#if 0
+
 #pragma once
 
 #include "arc/core.hpp"
@@ -36,3 +38,4 @@ namespace arc { namespace engine {
 }} // namespace arc::engine
 
 
+#endif

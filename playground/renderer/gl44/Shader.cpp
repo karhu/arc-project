@@ -40,7 +40,13 @@ namespace arc { namespace renderer { namespace gl44 {
 		auto available = cb.mapped_end - cb.front;
 		if (available < byte_size)
 		{
-			// TODO: remember old buffer
+			// remember old buffer
+			m_used_buffers.push_back({
+				cb.gl_id,
+				cb.unflushed_begin,
+				cb.front - cb.unflushed_begin
+			});
+			
 			request_new_buffer(byte_size);
 		}
 
@@ -422,10 +428,10 @@ namespace arc { namespace renderer { namespace gl44 {
 			last_id_before_increment,
 			id_size_increment,
 			10000,
-			[this](uint32 new_size)
+			[this](uint32 new_last_id)
 		{
 			ShaderDescription sd;
-			m_shader_data.resize(new_size, sd);
+			m_shader_data.resize(new_last_id+1, sd);
 		}
 		);
 

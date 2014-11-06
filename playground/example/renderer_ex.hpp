@@ -146,10 +146,6 @@ inline void renderer_example()
 		for (uint32 i = 0; i < 25; i++)
 		{
 			auto buffer = rb->add(id_shader, id_geometry_plane, 0);
-			if (!buffer.valid())
-			{
-				std::cout << "error" << std::endl;
-			}
 			_CHECK(buffer.valid(), "draw unsuccessful");
 			buffer.access<vec3>(color_offset) = colors[i%3];
 		}

@@ -95,6 +95,7 @@
     <ClInclude Include="math\vectors.hpp" />
     <ClInclude Include="memory\Allocator.hpp" />
     <ClInclude Include="memory\LinearAllocator.hpp" />
+    <ClInclude Include="memory\static_allocator.hpp" />
     <ClInclude Include="memory\util.hpp" />
     <ClInclude Include="string\all.hpp" />
     <ClInclude Include="string\ConsoleWriter.hpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="lua\State.cpp" />
     <ClCompile Include="memory\Allocator.cpp" />
     <ClCompile Include="memory\LinearAllocator.cpp" />
+    <ClCompile Include="memory\static_allocator.cpp" />
     <ClCompile Include="string\String.cpp" />
     <ClCompile Include="string\StringView.cpp" />
     <ClCompile Include="string\write_string.cpp" />

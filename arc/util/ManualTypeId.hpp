@@ -17,6 +17,7 @@ namespace arc
 	{
 		static bool Valid() { return s_id != Context::Invalid; }
 		static void Initialize();
+		static void AssertInitialized();
 		static typename Context::Type Value();
 	private:
 		static typename Context::Type s_id;
@@ -32,6 +33,35 @@ namespace arc
 		if (s_id != Context::Invalid)
 		{
 			ARC_ASSERT(false, "Already initialized.");
+			return;
+		}
+
+		// grab the next id
+		auto& next = _ManualTypeIdState<Context>::s_next;
+
+		// check if it is a valid id
+		if (next == Context::Invalid)
+		{
+			ARC_ASSERT(false, "ID space is exhausted");
+			return;
+		}
+
+		// save the next id
+		s_id = next;
+
+		// increment id counter
+		if (next == Context::Last)
+			next = Context::Invalid;
+		else
+			next += 1;
+	}
+
+	template<typename Context, typename Type>
+	/*static*/  void ManualTypeId<Context, Type>::AssertInitialized()
+	{
+		// check whether this type was already initialized
+		if (s_id != Context::Invalid)
+		{
 			return;
 		}
 

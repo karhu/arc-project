@@ -1,0 +1,3 @@
+
+
+void entity_example();
