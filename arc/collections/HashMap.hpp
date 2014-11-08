@@ -17,11 +17,33 @@ namespace arc
 			uint64 key() { return m_key; }
 			T& value() { return m_value; }
 			const T& value() const { return m_value; }
+		public:
+			Entry(uint64_t key, const T& value, uint32_t next = 0)
+				: m_key(key), m_value(value), m_next(next)
+			{}
+
+			Entry(uint64_t key, T&& value, uint32_t next = 0)
+				: m_key(key), m_value(std::forward<T>(value)), m_next(next)
+			{}
+
+			Entry() : m_key(0), m_value(), m_next(0) {}
+		public:
+			Entry(Entry&& other)
+				: m_key(other.m_key), m_value(std::move(other.m_value)), m_next(other.m_next)
+			{}
+
+			Entry& operator=(Entry&& other)
+			{
+				m_key = other.m_key;
+				m_value = std::move(other.m_value);
+				m_next = other.m_next;
+				return *this;
+			}
 
 		private:
 			uint64 m_key;
 			T      m_value;
-			uint32 m_next;
+			uint32 m_next; 
 
 			friend class HashMap<T>;
 		};
@@ -41,6 +63,9 @@ namespace arc
 
 		Entry& get(uint64 key, const T& fallback_init);
 		Entry& get(uint64 key, const T& fallback_init, bool& o_fallback_used);
+
+		Entry& get(uint64 key, T&& fallback_init);
+		Entry& get(uint64 key, T&& fallback_init, bool& o_fallback_used);
 
 		Entry& set(uint64 key, const T& value);
 

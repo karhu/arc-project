@@ -1,227 +1,154 @@
 #pragma once
 
-#include "arc/core.hpp"
-#include "arc/lua/State.hpp"
+#include "arc/common.hpp"
+#include "arc/util/IndexPool.hpp"
 #include "arc/util/ManualTypeId.hpp"
-#include "arc/collections/Slice.hpp"
+#include "arc/collections/Array.hpp"
 
-// public interface ///////////////////////////////////////////
 namespace arc { namespace entity {
 
-		using ComponentIndex = uint32;
-		using ComponentType  = uint8;
+	class Context;
 
-		const uint32 INVALID_ENTITY_INDEX = std::numeric_limits<uint32>::max();
-		const uint32 INVALID_COMPONENT_INDEX = std::numeric_limits<uint32>::max();
+	struct Handle
+	{
+	public:
+		inline uint32 index() { return m_index; }
+	private:
+		uint32 m_index : 24;
+		uint32 m_generation : 8;
+	private:
+		friend class entity::Context;
+	};
 
-		struct Handle
+	class ComponentBackend
+	{
+	public:
+		virtual ~ComponentBackend() {}
+	};
+
+	class Context
+	{
+	public:
+		Context(memory::Allocator* alloc, uint32 initial_capacity);
+		~Context();
+	public:
+		template<typename T>
+		bool register_component(uint32 initial_capacity);
+		template<typename T>
+		typename T::Backend& get_backend();
+	public:
+		entity::Handle create_entity();
+		bool destroy_entity(entity::Handle h);
+	public:
+		bool valid(entity::Handle h);
+	public:
+		template<typename T>
+		typename T::Handle add_component(entity::Handle h);
+
+		template<typename T>
+		typename T::Handle get_component(entity::Handle h);
+
+		template<typename T>
+		bool has_component(entity::Handle h);
+
+		template<typename T>
+		bool remove_component(entity::Handle h);
+	private:
+		struct CompTContext
 		{
-		public: // constructor
-			Handle(uint32 index = INVALID_ENTITY_INDEX);
-		private:
+			using Type = uint8;
+			static const uint8 First = 0;
+			static const uint8 Last = 254;
+			static const uint8 Invalid = 255;
+		};
+		struct ComponentEntry
+		{
+			CompTContext::Type m_type;
 			uint32 m_index;
-		private:
-			friend uint32 _index(Handle h);
+		};
+		struct EntityData
+		{
+			uint16 m_component_count = 0;
 		};
 
-		bool initialize(lua::State& config);
-		bool finalize();
-		bool is_initialized();
+	private:
+		uint32 m_index;
+		IndexPool32 m_index_pool;
+		memory::Allocator* m_allocator = nullptr;
 
-		template<typename T>
-		bool register_component(uint32 max_count);
-
-		Handle create();
-		//bool destroy(Handle h);
-
-		bool valid(Handle h);
-		
-		template<typename T>
-		T get(Handle h);
-
-		template<typename T>
-		bool has(Handle h);
-
-		template<typename T>
-		T add(Handle h);
-
-		template<typename T>
-		bool remove(Handle h);
-
-		// update functions
-
-		void update_component_removal();
-
-}} // namespace arc::entity
-
-// callback functionality /////////////////////////////////////////
-
-namespace arc { namespace entity {
-
-	using CallbackFunction = void(*)();
-
-	enum class CallbackType : uint16
-	{
-		Update = 0,
-		RenderPre,
-		RenderMain,
-		RenderPost,
-		COUNT,
+		ComponentBackend* m_component_backends[CompTContext::Last + 1];
 	};
 
-	void register_callback(CallbackType type, float priority, CallbackFunction function);
-	void call_callbacks(CallbackType type);
 
-}}
-
-// implementation utils ///////////////////////////////////////////
-namespace arc { namespace entity {
-
-	using _ComponentRemovalCallback = void(*)(Slice<uint32> component_indices);
-
-	uint32 _index(Handle h);
-	uint32 _get_component(uint32 entity_index, ComponentType type);
-	bool   _has_component(uint32 entity_index, ComponentType type);
-	uint32 _add_component(uint32 entity_index, ComponentType type, uint32 component_index);
-	bool   _remove_component_later(Handle h, ComponentType type);
-	bool   _register_component_removal_callback(ComponentType type, _ComponentRemovalCallback rm_cb);
-	bool   _component_index_changed(uint32 entity_index, ComponentType type, uint32 new_component_index);
-	bool   _unlink_component_from_entity(uint32 entity_index, ComponentType type);
-
-	struct ComponentTypeContext
-	{
-		using Type = uint8;
-		static const uint8 First = 0;
-		static const uint8 Last = 254;
-		static const uint8 Invalid = 255;
-	};
-
-}} // namespace arc::entity
-
-// template function implementations //////////////////////////////
-namespace arc { namespace entity {
+	// template implementations ///////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool register_component(uint32 max_count)
+	bool Context::register_component(uint32 initial_capacity)
 	{
-		ARC_ASSERT(is_initialized(), "Entity system is not initialized.");
-
-		auto& alloc = engine::longterm_allocator();
-		bool ok = T::Backend::Initialize(&alloc, max_count);
-
-		if (ok)
+		ManualTypeId<CompTContext, T>::AssertInitialized();
+		auto type_id = ManualTypeId<CompTContext, T>::Value();
+		
+		if (m_component_backends[type_id])
 		{
-			ManualTypeId<ComponentTypeContext, T>::Initialize();
-			auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
-			_register_component_removal_callback(type_id, &T::Backend::RemovalCallback);
-
-			T::Backend::RegisterCallbacks();
-			return true;
+			ARC_ASSERT(false, "type is already registered");
+			return false;
 		}
 
-		return false;
+		m_component_backends[type_id] = m_allocator->create<T::Backend>(m_allocator, initial_capacity);
+		return true;
 	}
 
 	template<typename T>
-	T get(Handle h)
+	typename T::Handle Context::add_component(entity::Handle h)
 	{
-		ARC_ASSERT(is_initialized(), "Entity system is not initialized.");
-		ARC_ASSERT(valid(h), "Trying to use invalid EntityInterface");
-
-		auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
-		auto component_index = _get_component(_index(h), type_id);
-		return T::Backend::Get(component_index);
+		ARC_ASSERT(valid(h), "invalid entity handle");
+		return get_backend<T>().add_component(h);
 	}
 
 	template<typename T>
-	bool has(Handle h)
+	typename T::Handle Context::get_component(entity::Handle h)
 	{
-		ARC_ASSERT(is_initialized(), "Entity system is not initialized.");
-		ARC_ASSERT(valid(h), "Trying to use invalid EntityHandle.");
-		auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
-		return _has_component(_index(h), type_id);
+		ARC_ASSERT(valid(h), "invalid entity handle");
+		return get_backend<T>().get_component(h);
 	}
 
 	template<typename T>
-	T add(Handle h)
+	typename T::Backend& Context::get_backend()
 	{
-		ARC_ASSERT(is_initialized(), "Entity system is not initialized.");
-		ARC_ASSERT(valid(h), "Trying to use invalid EntityHandle.");
+		auto type_id = ManualTypeId<CompTContext, T>::Value();
+		ARC_ASSERT(type_id != CompTContext::Invalid, "Invalid Component Type");
 
-		auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
+		auto backend = m_component_backends[type_id];
+		ARC_ASSERT(backend != nullptr, "Unregistered Component Type");
 
-		// check if the component is already present
-		if (_has_component(_index(h), type_id)) return {};
+		auto typed_backend = reinterpret_cast<T::Backend*>(backend);
 
-		// create the component
-		uint32 component_index = T::Backend::Create(_index(h));
-		_add_component(_index(h), type_id, component_index);
-
-		return T::Backend::Get(component_index);
+		return *typed_backend;
 	}
-
+#if 0 
 	template<typename T>
-	bool remove(Handle h)
+	bool Context::remove_component(entity::Handle h)
 	{
-		ARC_ASSERT(is_initialized(), "Entity system is not initialized.");
-		ARC_ASSERT(valid(h), "Trying to use invalid EntityHandle.");
+		ARC_ASSERT(valid(h), "invalid entity handle");
+		ARC_NOT_IMPLEMENTED;
+		//return T::Backend::Remove_Component(*this, h.m_index, -1);
+	}
+#endif
+	template<typename T>
+	bool Context::has_component(entity::Handle h)
+	{
+		ARC_ASSERT(valid(h), "invalid entity handle");
 
-		auto type_id = ManualTypeId<ComponentTypeContext, T>::Value();
+		auto type_id = ManualTypeId<CompTContext, T>::Value();
+		ARC_ASSERT(type_id != CompTContext::Invalid, "Invalid Component Type");
 
-		return _remove_component_later(h, type_id);
+		auto backend = m_component_backends[type_id];
+		ARC_ASSERT(backend != nullptr, "Unregistered Component Type");
+
+		auto typed_backend = static_cast<T*>(backend);
+
+		return typed_backend->get_component(h).valid();
 	}
 
-}} // namespace arc::entity
 
-
-namespace arc {
-
-	/*
-	template<typename ...Types>
-	class StructOfArrays
-	{
-	public:
-	static const uint32 FIELD_COUNT = sizeof...(Types);
-	public:
-	void initialize(memory::Allocator* alloc, uint32 size)
-	{
-	ARC_ASSERT(m_alloc == nullptr, "Already initialized.");
-
-	m_size = size;
-	m_alloc = alloc;
-
-	parameter_pack<Types...>::foreach<InitIterator>(*this);
-	}
-
-	public:
-	template<uint32 FieldIndex, typename T>
-	T& get(uint32 index)
-	{
-	static_assert(FieldIndex < FIELD_COUNT, "Field index out of bounds.");
-	using FieldType = pack_element<FieldIndex, Types...>::type;
-	static_assert(std::is_same<T, FieldType>::value, "Incorrect type requested");
-
-	ARC_ASSERT(index < m_size, "Invalid element index: %u",index);
-
-	FieldType* data = static_cast<FieldType*>(m_data[FieldIndex]);
-	return data[index];
-	}
-
-	private:
-	using ThisT = StructOfArrays < Types... > ;
-
-	struct InitIterator { template<typename T> static bool iteration(uint32 index, ThisT& self)
-	{
-	self.m_data[index] = self.m_alloc->allocate(sizeof(T)*self.m_size, alignof(T));
-	return true;
-	}};
-
-	private:
-	void* m_data[FIELD_COUNT];
-	uint32 m_size = 0;
-	memory::Allocator* m_alloc = nullptr;
-	};
-
-	*/
-
-}
+}}

@@ -243,8 +243,8 @@ namespace arc { namespace renderer { namespace gl44 {
 			return INVALID_SHADER_ID;
 		}
 
-		std::cout << vertex_source.c_str() << std::endl;
-		std::cout << fragment_source.c_str() << std::endl;
+		//std::cout << vertex_source.c_str() << std::endl;
+		//std::cout << fragment_source.c_str() << std::endl;
 
 		// OpenGL part //
 

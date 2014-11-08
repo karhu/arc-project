@@ -10,7 +10,7 @@
 struct malloc_log
 {
 	static const char* name() { return "malloc"; }
-	static int priority() { return arc::log::PRIORITY_DEBUG;  }
+	static int priority() { return arc::log::PRIORITY_WARNING;  }
 };
 
 namespace arc { namespace memory {

@@ -3,6 +3,7 @@
 #include "arc/core.hpp"
 #include "arc/collections/Slice.hpp"
 
+#include "arc/memory/Allocator.hpp"
 #include "arc/memory/util.hpp"
 
 namespace arc
@@ -16,9 +17,11 @@ namespace arc
 		Array(memory::Allocator& a, uint32 size = 0);
 		Array() = default;
 		~Array();
-
+	public: // move constructor and assignment
+		Array(Array<T>&& other);
+		Array<T>& operator=(Array<T>&& other);
+	public:
 		ARC_NO_COPY(Array);
-
 	public:
 		T& operator[] (uint32 idx);
 		const T& operator[] (uint32 idx) const;
@@ -33,6 +36,8 @@ namespace arc
 
 	public:
 		void push_back(const T& value = T());
+		void push_back(T&& value);
+
 		void pop_back();
 		T& back();
 		const T& back() const;

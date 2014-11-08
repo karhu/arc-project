@@ -1,8 +1,10 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace arc {namespace input {
 
-	enum class Key : uint16	{
+	enum class Key : uint16_t	{
 		UNKNOWN = 0,
 
 		// Keys A-Z

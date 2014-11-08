@@ -105,7 +105,7 @@ inline void renderer_example()
 
 	int32 counter = 30;
 	bool stop = false;
-	using namespace arc::input;
+	//using namespace arc::input;
 
 	while ((counter > 0 && !stop) )
 	{

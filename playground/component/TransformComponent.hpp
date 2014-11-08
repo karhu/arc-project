@@ -1,15 +1,12 @@
 #pragma once
 
-#include "entity2.hpp"
-#include "SimpleComponent.hpp"
+#include "../entity/entity.hpp"
+#include "../entity/SimpleComponent.hpp"
 
 #include "arc/common.hpp"
 #include "arc/math/vectors.hpp"
 
-// TODO:
-// - fix resizing bug
-
-namespace arc { namespace entity2 {
+namespace arc {
 
 	// TransformComponent ///////////////////////////////////////////////////////////////////////////
 
@@ -20,7 +17,7 @@ namespace arc { namespace entity2 {
 		vec4  orientation;
 	};
 
-	class TransformComponentHandle : public SimpleComponentHandle<TransformData>
+	class TransformComponent : public entity::SimpleComponent<TransformComponent, TransformData>
 	{
 	public:
 		vec3  get_position()    { return data().position; }
@@ -32,8 +29,6 @@ namespace arc { namespace entity2 {
 		void set_scale(float position)         { data().scale = position; }
 	};
 
-	using TransformComponent = SimpleComponent < TransformData, TransformComponentHandle > ;
-
 	// RenderComponent //////////////////////////////////////////////////////////////////////////////
 
 	struct RenderData
@@ -44,8 +39,7 @@ namespace arc { namespace entity2 {
 		uint32 mesh_id = 0;
 	};
 
-
-	struct RenderComponentHandle : public SimpleComponentHandle<RenderData>
+	struct RenderComponent : public entity::SimpleComponent<RenderComponent, RenderData>
 	{
 	public:
 		bool get_visibility() const		{ return data().visible; }
@@ -57,8 +51,6 @@ namespace arc { namespace entity2 {
 		void set_transform(const mat4& value)   { data().transform = value; }
 	};
 
-	using RenderComponent = SimpleComponent < RenderData, RenderComponentHandle >;
-
 	// TestComponent /////////////////////////////
 
 	struct TestComponentData
@@ -68,7 +60,7 @@ namespace arc { namespace entity2 {
 		uint32 mesh_id;
 	};
 
-	struct TestComponentHandle : public SimpleComponentHandle<TestComponentData>
+	struct TestComponent : public entity::SimpleComponent<TestComponent, TestComponentData>
 	{
 	public:
 		vec4 get_color() const			{ return data().color; }
@@ -82,7 +74,7 @@ namespace arc { namespace entity2 {
 		TestComponentData* m_ptr = nullptr;
 	};
 
-	struct TestComponent
+	/*struct TestComponent
 	{
 		using Data = TestComponentData;
 		using Handle = TestComponentHandle;
@@ -95,7 +87,7 @@ namespace arc { namespace entity2 {
 		HashMap<int32>			m_mapping;
 		Array<Data>				m_data;
 		Array<entity2::Handle>	m_entities;
-	};
+	};*/
 
 	// TestComponent2 /////////////////////////////
 #if 0
@@ -136,4 +128,4 @@ namespace arc { namespace entity2 {
 		friend class TestComponent2Handle;
 	};
 #endif
-}}
+}

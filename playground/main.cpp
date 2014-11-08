@@ -13,15 +13,10 @@
 #include "engine.hpp"
 #include "ShaderManager.hpp"
 #include "GeometryManager.hpp"
-#include "input.hpp"
 
 #include "arc/gl/functions.hpp"
 #include "arc/gl/meta.hpp"
 #include "arc/math/vectors.hpp"
-
-#include "entity/entity.hpp"
-#include "entity/TransformComponent.hpp"
-#include "entity/SimpleMaterialComponent.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -194,7 +189,7 @@ int main(int argc, char** argv)
 	lua::State sys_config;
 
 	auto& shader_manager = *engine::add_subsystem<engine::ShaderManager>();
-	auto& keyboard = *engine::add_subsystem<input::KeyboardState>();
+	//auto& keyboard = *engine::add_subsystem<input::KeyboardState>();
 
 	engine::initialize_subsystems(sys_config);
 
@@ -228,14 +223,14 @@ int main(int argc, char** argv)
 
 	bool stop = true;
 
-	using namespace arc::input;
+	//using namespace arc::input;
 
 	while ((counter > 0 && !stop ))
 	{
 		engine::deprecated_update();
 		render();
 
-		if (keyboard.down(Key::Escape)) stop = true;
+		//if (keyboard.down(Key::Escape)) stop = true;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		--counter;

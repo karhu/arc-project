@@ -174,16 +174,15 @@ namespace arc
                 rehash(8);
                 fr.h_idx = key % m_hashes.size();
             }
-
-            m_data.push_back();
-            Entry& entry = m_data.back();
-            entry.m_key = key;
-            entry.m_value = value;
-            entry.m_next = m_hashes[fr.h_idx];
+			Entry entry;
+			entry.m_key = key;
+			entry.m_value = value;
+			entry.m_next = m_hashes[fr.h_idx];
+			m_data.push_back(entry);
 
             m_hashes[fr.h_idx] = m_data.size() - 1;
             if (load_factor() > 0.7f) rehash(m_hashes.size()*2);
-            return entry;
+			return m_data.back();
         }
     }
 
@@ -278,6 +277,58 @@ namespace arc
 	}
 
 	template<typename T>
+	typename HashMap<T>::Entry& HashMap<T>::get(uint64 key, T&& fallback_init)
+	{
+		auto fr = find(key);
+		if (present(fr))
+		{
+			return m_data[fr.d_idx];
+		}
+		else
+		{
+			if (m_hashes.size() == 0)
+			{
+				rehash(8);
+				fr.h_idx = key % m_hashes.size();
+			}
+
+			Entry entry(key, std::forward<T>(fallback_init), m_hashes[fr.h_idx]);
+			m_data.push_back(std::move(entry));
+			m_hashes[fr.h_idx] = m_data.size() - 1;
+
+			if (load_factor() > 0.7f) rehash(m_hashes.size() * 2);
+			return m_data.back();
+		}
+	}
+
+	template<typename T>
+	typename HashMap<T>::Entry& HashMap<T>::get(uint64 key, T&& fallback_init, bool& o_fallback_used)
+	{
+		auto fr = find(key);
+		if (present(fr))
+		{
+			o_fallback_used = false;
+			return m_data[fr.d_idx];
+		}
+		else
+		{
+			o_fallback_used = true;
+			if (m_hashes.size() == 0)
+			{
+				rehash(8);
+				fr.h_idx = key % m_hashes.size();
+			}
+
+			Entry entry(key, std::forward<T>(fallback_init), m_hashes[fr.h_idx]);
+			m_data.push_back(std::move(entry));
+			m_hashes[fr.h_idx] = m_data.size() - 1;
+
+			if (load_factor() > 0.7f) rehash(m_hashes.size() * 2);
+			return m_data.back();
+		}
+	}
+
+	template<typename T>
 	typename HashMap<T>::Entry& HashMap<T>::get(uint64 key, const T& fallback_init)
 	{
 		auto fr = find(key);
@@ -293,15 +344,13 @@ namespace arc
 				fr.h_idx = key % m_hashes.size();
 			}
 
-			m_data.push_back();
-			Entry& entry = m_data.back();
-			entry.m_key = key;
-			entry.m_value = fallback_init;
-			entry.m_next = m_hashes[fr.h_idx];
+
+			Entry entry(key, fallback_init, m_hashes[fr.h_idx]);
+			m_data.push_back(std::move(entry));
 			m_hashes[fr.h_idx] = m_data.size() - 1;
 
 			if (load_factor() > 0.7f) rehash(m_hashes.size() * 2);
-			return entry;
+			return m_data.back();
 		}
 	}
 
@@ -323,15 +372,12 @@ namespace arc
 				fr.h_idx = key % m_hashes.size();
 			}
 
-			m_data.push_back();
-			Entry& entry = m_data.back();
-			entry.m_key = key;
-			entry.m_value = fallback_init;
-			entry.m_next = m_hashes[fr.h_idx];
+			Entry entry(key, fallback_init, m_hashes[fr.h_idx]);
+			m_data.push_back(std::move(entry));
 			m_hashes[fr.h_idx] = m_data.size() - 1;
 
 			if (load_factor() > 0.7f) rehash(m_hashes.size() * 2);
-			return entry;
+			return m_data.back();
 		}
 	}
 

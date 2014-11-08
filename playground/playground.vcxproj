@@ -82,20 +82,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="component\TransformComponent.hpp" />
     <ClInclude Include="engine.hpp" />
-    <ClInclude Include="entity2\SimpleComponent.hpp" />
-    <ClInclude Include="entity2\entity2.hpp" />
-    <ClInclude Include="entity2\TransformComponent2.hpp" />
-    <ClInclude Include="entity\entity.hpp" />
-    <ClInclude Include="entity\common.hpp" />
+    <ClInclude Include="engine\CallbackManager.hpp" />
     <ClInclude Include="entity\SimpleComponent.hpp" />
-    <ClInclude Include="entity\SimpleMaterialComponent.hpp" />
-    <ClInclude Include="entity\TransformComponent.hpp" />
+    <ClInclude Include="entity\entity.hpp" />
     <ClInclude Include="example\example.hpp" />
     <ClInclude Include="example\renderer_ex.hpp" />
     <ClInclude Include="GeometryManager.hpp" />
-    <ClInclude Include="input.hpp" />
-    <ClInclude Include="Keys.hpp" />
+    <ClInclude Include="input\KeyboardState.hpp" />
+    <ClInclude Include="input\Keys.hpp" />
     <ClInclude Include="renderer\gl44\log_tag.hpp" />
     <ClInclude Include="renderer\gl44\shader.hpp" />
     <ClInclude Include="renderer\mesh.hpp" />
@@ -114,14 +110,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine.cpp" />
-    <ClCompile Include="entity2\entity2.cpp" />
-    <ClCompile Include="entity2\SimpleComponent.cpp" />
-    <ClCompile Include="entity2\TransformComponent2.cpp" />
+    <ClCompile Include="engine\CallbackManager.cpp" />
     <ClCompile Include="entity\entity.cpp" />
-    <ClCompile Include="entity\SimpleMaterialComponent.cpp" />
     <ClCompile Include="example\entity_ex.cpp" />
     <ClCompile Include="GeometryManager.cpp" />
-    <ClCompile Include="input.cpp" />
+    <ClCompile Include="input\KeyboardState.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="renderer\gl44\shader.cpp" />
     <ClCompile Include="renderer\mesh.cpp" />

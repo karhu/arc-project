@@ -143,13 +143,45 @@ namespace arc
 		resize(size);
 	}
 
+	template<typename T> inline
+		Array<T>::Array(Array<T>&& other)
+		: m_allocator(other.m_allocator)
+		, m_data(other.m_data)
+		, m_size(other.m_size)
+		, m_capacity(other.m_capacity)
+	{
+		other.m_data = nullptr;
+		other.m_size = 0;
+		other.m_capacity = 0;
+	}
 
+	template<typename T> inline
+	Array<T>& Array<T>::operator=(Array<T>&& other)
+	{
+		m_allocator = other.m_allocator;
+		m_data = other.m_data;
+		m_size = other.m_size;
+		m_capacity = other.m_capacity;
+
+		other.m_data = nullptr;
+		other.m_size = 0;
+		other.m_capacity = 0;
+
+		return *this;
+	}
 
 	template<typename T> inline
 	void Array<T>::push_back(const T& value)
 	{
 		resize(m_size + 1);
 		back() = value;
+	}
+
+	template<typename T> inline
+	void Array<T>::push_back(T&& value)
+	{
+		resize(m_size + 1);
+		back() = std::move(value);
 	}
 
 	template<typename T> inline
