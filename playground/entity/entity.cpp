@@ -1,6 +1,5 @@
 #include "entity.hpp"
 
-#include "arc/memory/static_allocator.hpp"
 #include "arc/collections/Array.inl"
 
 namespace arc { namespace entity {

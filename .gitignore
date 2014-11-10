@@ -63,3 +63,7 @@ arc/Release/*
 arc/Debug/*
 playground/Release/*
 playground/Debug/*
+*.lib
+*.dll
+*.ilk
+*.lib

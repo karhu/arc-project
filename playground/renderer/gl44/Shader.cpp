@@ -396,14 +396,15 @@ namespace arc { namespace renderer { namespace gl44 {
 		uint32 last_id_before_increment = 16;
 		uint32 id_size_increment = 16;
 
+
 		// load lua standard libs
 		m_lua.open_standard_libs();
 
 		// load custom lua library
-		bool ok = m_lua.execute_file("shader_framework_0.2.lua");
+		bool ok = m_lua.execute_file("../../shader_framework_0.2.lua");
 		if (!ok)
 		{
-			LOG_ERROR(tag_gl44, "Could not load: shader_framework.lua");
+			LOG_ERROR(tag_gl44, "Could not load: ../../shader_framework_0.2.lua");
 			return false;
 		}
 

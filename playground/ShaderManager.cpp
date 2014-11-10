@@ -28,10 +28,10 @@ namespace arc { namespace engine {
 		m_lua.open_standard_libs();
 
 		// load custom lua library
-		bool ok = m_lua.execute_file("shader_framework.lua");
+		bool ok = m_lua.execute_file("../shader_framework.lua");
 		if (!ok)
 		{
-			LOG_ERROR(tag_shader, "Could not load: shader_framework.lua");
+			LOG_ERROR(tag_shader, "Could not load: ../shader_framework.lua");
 			return false;
 		}
 
