@@ -85,7 +85,7 @@ namespace arc { namespace input {
 		return UNHANDLED;
 	}
 
-	bool KeyboardState::down(Key k)
+	bool KeyboardState::down(Key k) const
 	{
 		// we also return down if the state is only pressed
 		// this is the case if press and release happened in the 
@@ -94,13 +94,13 @@ namespace arc { namespace input {
 		return ks.fields.down_once;
 	}
 
-	uint8_t KeyboardState::pressed(Key k)
+	uint8_t KeyboardState::pressed(Key k) const
 	{
 		KeyState ks; ks.raw = m_h_state[(uint16)k];
 		return ks.fields.pressed_counter;
 	}
 
-	uint8_t KeyboardState::released(Key k)
+	uint8_t KeyboardState::released(Key k) const
 	{
 		KeyState ks; ks.raw = m_h_state[(uint16)k];
 		return ks.fields.released_counter;

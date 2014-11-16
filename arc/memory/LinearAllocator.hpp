@@ -7,11 +7,8 @@ namespace arc { namespace memory {
 	class LinearAllocator : public Allocator
 	{
 	public:
-		LinearAllocator() = default;
+		LinearAllocator(memory::Allocator* parent, uint32 size);
 		~LinearAllocator();
-	public:
-		void initialize(memory::Allocator* parent, uint32 size);
-		void finalize();
 	public:
 		void* allocate(uint64 size, uint32 align = 4) override;
 		void  free(void* data) override;

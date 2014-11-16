@@ -11,8 +11,6 @@
 #include "arc/string/util.hpp"
 
 #include "engine.hpp"
-#include "ShaderManager.hpp"
-#include "GeometryManager.hpp"
 
 #include "arc/gl/functions.hpp"
 #include "arc/gl/meta.hpp"
@@ -24,8 +22,7 @@
 
 #include "arc/memory/util.hpp"
 
-#include "renderer/mesh.hpp"
-#include "renderer/RendererBase.hpp"
+#include "arc/renderer/RendererBase.hpp"
 
 using namespace arc;
 
@@ -80,8 +77,9 @@ int main(int argc, char** argv)
 
 	// experiment //////////////////////////////////////////////////////////////////////
 
-	renderer_example();
-	entity_example();
+	simple_mesh_example();
+	//renderer_example();
+	//entity_example();
 
 	// stop engine /////////////////////////////////////////////////////////////////////
 

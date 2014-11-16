@@ -3,7 +3,7 @@
 #include "arc/common.hpp"
 #include "arc/math/vectors.hpp"
 
-#include "../renderer/Renderer_GL44.hpp"
+#include "arc/renderer/Renderer_GL44.hpp"
 
 #include <iostream>
 
@@ -29,9 +29,30 @@ renderer::VertexLayout& ExampleVertexData::Layout()
 			{ SH32("normal"), Type::float32, 3, offsetof(ExampleVertexData, normal) },
 			{ SH32("color"), Type::uint8_nf, 4, offsetof(ExampleVertexData, color) },
 	};
-	static VertexLayout layout = { "ExampleVertexData", attributes, 3, sizeof(ExampleVertexData) };
+	static VertexLayout layout = { SH32("ExampleVertexData"), attributes, 3, sizeof(ExampleVertexData) };
 	return layout;
 }
+
+struct Camera
+{
+	mat4 compute_view_matrix()
+	{
+
+	}
+
+	void translate_global(const vec3& delta)
+	{
+		m_world_pos += delta;
+	}
+
+	void translate_local(const vec3& delta)
+	{
+
+	}
+	vec3 m_world_pos;
+	
+	mat4 m_view_matrix;
+};
 
 inline void renderer_example()
 {
@@ -52,15 +73,17 @@ inline void renderer_example()
 	config.longterm_allocator = &longterm_alloc;
 
 	// initialize renderer
-	Renderer_GL44 renderer_gl44;
+	bool ok = Renderer_GL44::Validate(config);
+	_CHECK(ok, "invalid renderer config");
+	Renderer_GL44 renderer_gl44(config);
+	
 	auto& r = renderer_gl44;
-	bool ok = r.initialize(config);
-	_CHECK(ok, "renderer inititalization");
+	
 
-	id_geometry_config = r.geometry_config_register(&ExampleVertexData::Layout(), IndexType::Uint16, PrimitiveType::Triangle);
+	id_geometry_config = r.geometry_config_register(ExampleVertexData::Layout(), IndexType::Uint16, PrimitiveType::Triangle);
 	_CHECK(id_geometry_config != INVALID_GEOMETRY_CONFIG_ID, "invalid GeometryConfigID");
 
-	// create plane geometry plane
+	// create plane geometry
 	{
 		UntypedBuffer buffer;
 		uint16* indices;
@@ -125,22 +148,12 @@ inline void renderer_example()
 			ShaderUniformType::Instanced,
 			ShaderPrimitiveType::vec3_t,
 			SH32("instance.color"));
-
 		_CHECK(color_offset != -1, "shader_get_uniform_offset unsuccessful");
 
 		vec3 colors[] = {
-			vec3(0.3f, 0.6f, 0.9f),
-			vec3(0.6f, 0.9f, 0.3f),
-			vec3(0.9f, 0.3f, 0.6f),
-		};
-
-		vec3 colors2[] = {
-			vec3(0.3f, 0.6f, 0.9f),
-			vec3(0.3f, 0.9f, 0.6f),
-			vec3(0.6f, 0.9f, 0.3f),
-			vec3(0.6f, 0.3f, 0.9f),
-			vec3(0.9f, 0.3f, 0.6f),
-			vec3(0.9f, 0.6f, 0.3f),
+			vec3(0.07f, 0.32f, 0.79f),
+			vec3(0.32f, 0.79f, 0.07f),
+			vec3(0.79f, 0.07f, 0.32f),
 		};
 
 		for (uint32 i = 0; i < 25; i++)
@@ -160,9 +173,6 @@ inline void renderer_example()
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		--counter;
 	}
-
-	// finalize renderer
-	r.finalize();
 
 	std::cout << "<renderer_ex_end>" << "\n" << std::endl;
 }

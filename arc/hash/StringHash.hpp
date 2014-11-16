@@ -92,7 +92,7 @@ namespace arc { namespace hash {
 		ARC_CONSTEXPR StringHash32() {}
 		ARC_CONSTEXPR StringHash32(uint32 value) : m_value(value) {}
 
-		uint32 value() { return m_value; }
+		uint32 value() const { return m_value; }
 	private:
 		uint32 m_value = 0;
 	};

@@ -34,7 +34,7 @@ namespace arc
 
     public:
         /// this string might not be null terminated!
-        const char* c_str() const;
+        const char* c_str() const; // TODO rename to something that makes clear it is not 0-terminated.
         uint32 length() const;
 
     private:

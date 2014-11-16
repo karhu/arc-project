@@ -162,6 +162,8 @@
     <ClInclude Include="gl\meta.hpp" />
     <ClInclude Include="gl\types.hpp" />
     <ClInclude Include="hash\StringHash.hpp" />
+    <ClInclude Include="io\FileStream.hpp" />
+    <ClInclude Include="io\SimpleMesh.hpp" />
     <ClInclude Include="logging\buffer_writer.hpp" />
     <ClInclude Include="logging\log.hpp" />
     <ClInclude Include="lua\State.hpp" />
@@ -170,6 +172,13 @@
     <ClInclude Include="memory\Allocator.hpp" />
     <ClInclude Include="memory\LinearAllocator.hpp" />
     <ClInclude Include="memory\util.hpp" />
+    <ClInclude Include="renderer\gl44\log_tag.hpp" />
+    <ClInclude Include="renderer\gl44\shader.hpp" />
+    <ClInclude Include="renderer\RendererBase.hpp" />
+    <ClInclude Include="renderer\RendererConfig.hpp" />
+    <ClInclude Include="renderer\Renderer_GL44.hpp" />
+    <ClInclude Include="renderer\types.hpp" />
+    <ClInclude Include="renderer\VertexLayout.hpp" />
     <ClInclude Include="string\all.hpp" />
     <ClInclude Include="string\ConsoleWriter.hpp" />
     <ClInclude Include="string\String.hpp" />
@@ -186,11 +195,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\assert.cpp" />
+    <ClCompile Include="io\FileStream.cpp" />
+    <ClCompile Include="io\SimpleMesh.cpp" />
     <ClCompile Include="logging\buffer_writer.cpp" />
     <ClCompile Include="logging\log.cpp" />
     <ClCompile Include="lua\State.cpp" />
     <ClCompile Include="memory\Allocator.cpp" />
     <ClCompile Include="memory\LinearAllocator.cpp" />
+    <ClCompile Include="renderer\gl44\shader.cpp" />
+    <ClCompile Include="renderer\Renderer_GL44.cpp" />
+    <ClCompile Include="renderer\VertexLayout.cpp" />
     <ClCompile Include="string\String.cpp" />
     <ClCompile Include="string\StringView.cpp" />
     <ClCompile Include="string\write_string.cpp" />

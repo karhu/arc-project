@@ -18,12 +18,12 @@ namespace arc { namespace input {
 			bool unregister_callbacks(engine::CallbackManager& cbm);
 		public:
 			/* returns wheter a key was held down during the last frame */
-			bool down(Key k);
+			bool down(Key k) const;
 			/* returns how often a key was pressed during the last frame */
-			uint8_t pressed(Key k);
+			uint8_t pressed(Key k) const;
 			/* returns how often a key was released during the last frame */
-			uint8_t released(Key k);
-		protected:
+			uint8_t released(Key k) const;
+		public:
 			void update_frame_begin();
 		private:
 			uint16_t m_h_state[512];

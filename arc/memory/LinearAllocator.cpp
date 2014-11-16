@@ -4,26 +4,18 @@
 
 namespace arc { namespace memory {
 
-	LinearAllocator::~LinearAllocator() 
-	{ 
-		finalize(); 
-	}
-
-	void LinearAllocator::initialize(memory::Allocator* parent, uint32 size)
+	LinearAllocator::LinearAllocator(memory::Allocator* parent, uint32 size)
+		: m_parent_alloc(parent)
 	{
-		finalize();
-
-		m_parent_alloc = parent;
-
-		m_begin = (char*)parent->allocate(size);
+		m_begin = (char*)m_parent_alloc->allocate(size);
 		if (m_begin == nullptr) size = 0;
 
 		m_current = m_begin;
 		m_end = m_begin + size;
 	}
 
-	void LinearAllocator::finalize()
-	{
+	LinearAllocator::~LinearAllocator() 
+	{ 
 		if (m_parent_alloc != nullptr)
 		{
 			m_parent_alloc->free(m_begin);

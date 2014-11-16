@@ -27,46 +27,13 @@
     <ClInclude Include="engine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeometryManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="template_util.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\mesh.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\VertexLayout.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\renderer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\RendererBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\types.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\RendererConfig.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\Renderer_GL44.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="example\renderer_ex.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="state.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\gl44\log_tag.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\gl44\shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="example\example.hpp">
@@ -93,6 +60,9 @@
     <ClInclude Include="engine\CallbackManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="example\simple_mesh_ex.cpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -104,28 +74,7 @@
     <ClCompile Include="engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeometryManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\VertexLayout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\Renderer_GL44.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="state.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\gl44\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="example\entity_ex.cpp">

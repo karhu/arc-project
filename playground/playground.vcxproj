@@ -166,19 +166,9 @@
     <ClInclude Include="entity\entity.hpp" />
     <ClInclude Include="example\example.hpp" />
     <ClInclude Include="example\renderer_ex.hpp" />
-    <ClInclude Include="GeometryManager.hpp" />
+    <ClInclude Include="example\simple_mesh_ex.cpp" />
     <ClInclude Include="input\KeyboardState.hpp" />
     <ClInclude Include="input\Keys.hpp" />
-    <ClInclude Include="renderer\gl44\log_tag.hpp" />
-    <ClInclude Include="renderer\gl44\shader.hpp" />
-    <ClInclude Include="renderer\mesh.hpp" />
-    <ClInclude Include="renderer\renderer.hpp" />
-    <ClInclude Include="renderer\RendererBase.hpp" />
-    <ClInclude Include="renderer\RendererConfig.hpp" />
-    <ClInclude Include="renderer\Renderer_GL44.hpp" />
-    <ClInclude Include="renderer\types.hpp" />
-    <ClInclude Include="renderer\VertexLayout.hpp" />
-    <ClInclude Include="ShaderManager.hpp" />
     <ClInclude Include="state.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Struct.hpp" />
@@ -190,15 +180,8 @@
     <ClCompile Include="engine\CallbackManager.cpp" />
     <ClCompile Include="entity\entity.cpp" />
     <ClCompile Include="example\entity_ex.cpp" />
-    <ClCompile Include="GeometryManager.cpp" />
     <ClCompile Include="input\KeyboardState.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderer\gl44\shader.cpp" />
-    <ClCompile Include="renderer\mesh.cpp" />
-    <ClCompile Include="renderer\renderer.cpp" />
-    <ClCompile Include="renderer\Renderer_GL44.cpp" />
-    <ClCompile Include="renderer\VertexLayout.cpp" />
-    <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="state.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

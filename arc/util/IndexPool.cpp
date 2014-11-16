@@ -64,10 +64,11 @@ namespace arc
 		m_free_handles.push_back(h);
 	}
 
-	bool IndexPool32::valid(uint32 idx)
+	bool IndexPool32::valid(uint32 idx) const
 	{
 		return idx > 0 && idx < m_next_id;
 	}
+
 }
 
 /*
