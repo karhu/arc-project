@@ -67,3 +67,5 @@ playground/Debug/*
 *.dll
 *.ilk
 *.lib
+*.arc
+*.blend

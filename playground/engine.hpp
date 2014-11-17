@@ -9,12 +9,6 @@ namespace arc
 {
 	namespace engine
 	{
-		struct engine_log
-		{
-			static const char* name() { return "arc::engine"; }
-			static int priority() { return log::PRIORITY_VERBOSE; }
-		};
-
 		struct Config
 		{
 			uint8 gl_version_major = 4;
@@ -101,7 +95,7 @@ namespace arc
 			auto& sys = _assert_subsystem(type);
 			if (sys != nullptr)
 			{
-				LOG_ERROR(engine_log,"A subsystem with of type ", type, " was already added: ", sys->name());
+				LOG_ERROR("A subsystem with of type ", type, " was already added: ", sys->name());
 				ARC_ASSERT(false,"");
 				return nullptr;
 			}

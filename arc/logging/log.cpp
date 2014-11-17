@@ -31,7 +31,10 @@ namespace arc { namespace log {
 
 	void DefaultLogger::send(Message m)
 	{
-		std::cout << "[" << priority_tag(m.priority) << "][" << m.tag << "] " << m.text << "\n";
+		std::cout << "[" << priority_tag(m.priority) << "]";
+		if (m.tag) std::cout << "[" << m.tag << "]";
+		std::cout << "[" << m.file << ":" << m.line << "]";
+		std::cout << " " << m.text << "\n";
 	}
 
 	DefaultLogger::~DefaultLogger()

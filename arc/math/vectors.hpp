@@ -1,7 +1,8 @@
 #pragma once
 
-#include "glm/glm.hpp"
-#include "glm/core/type.hpp"
+#include <glm/glm.hpp>
+#include <glm/core/type.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "arc/core/numeric_types.hpp"
 
@@ -37,4 +38,6 @@ namespace arc
 
 	using mat3 = glm::detail::tmat3x3<float>;
 	using mat4 = glm::detail::tmat4x4<float>;
+
+	using quat = glm::fquat;
 }

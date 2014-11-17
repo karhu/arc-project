@@ -1,6 +1,7 @@
 #include "SimpleMesh.hpp"
 
 #include "../renderer/RendererBase.hpp"
+#include "arc/logging/log.hpp"
 
 namespace arc { namespace io {
 
@@ -8,8 +9,8 @@ namespace arc { namespace io {
 	{
 		if (!cb) return false;
 
-		if (!in.supports_seek()) return false;
-		if (!in.supports_tell()) return false;
+		if (!in.supports_seek()) { LOG_WARNING("Input stream does not support seek"); return false; }
+		if (!in.supports_tell()) { LOG_WARNING("Input stream does not support tell"); return false; }
 
 		auto stream_begin = in.tell();
 
@@ -26,16 +27,16 @@ namespace arc { namespace io {
 		next_offset += 3*sizeof(float);
 
 		in.read(&header, sizeof(MeshHeader));
-		if (!valid(header)) return false;
-		if (header.part_count == 0) return false;
+		if (!valid(header)) { LOG_ERROR("Invalid SimpleMesh Header"); return false; }
+		if (header.part_count == 0) { LOG_WARNING("SimpleMesh containts 0 parts."); return false; }
 
 		for (uint32_t i = 0; i < header.part_count; i++)
 		{
 			in.read(&ph, sizeof(PartHeader));
-			if (!valid(ph)) return false;
+			if (!valid(ph)) { LOG_ERROR("Invalid SimpleMesh Part Header"); return false; }
 
 			uint32_t att_count = count_attributes(ph);
-			if (att_count > 16) return false;
+			if (att_count > 16) { LOG_ERROR("Mesh has too many attributes."); return false; }
 
 			uint32_t att_idx = 1;
 			if (ph.attributes.normal)
@@ -106,6 +107,7 @@ namespace arc { namespace io {
 
 			cb(gid);
 		}
+		return true;
 	}
-
+	
 }}

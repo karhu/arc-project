@@ -6,9 +6,9 @@
 #include "arc/gl/functions.hpp"
 #include "arc/memory/util.hpp"
 #include "arc/math/common.hpp"
+#include "arc/logging/log.hpp"
 
 #include "../RendererConfig.hpp"
-#include "log_tag.hpp"
 
 namespace arc { namespace renderer { namespace gl44 {
 
@@ -212,7 +212,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		if (config.is_error())
 		{
 			String msg; config.get(msg);
-			LOG_INFO(tag_gl44, "Error loading lua shader config: \n", msg.c_str());
+			LOG_INFO("Error loading lua shader config: \n", msg.c_str());
 			m_shader_indices.release(idx);
 			return INVALID_SHADER_ID;
 		}
@@ -222,7 +222,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		if (sources.is_error())
 		{
 			String msg; sources.get(msg);
-			LOG_INFO(tag_gl44, "Error generating shader code: \n", msg.c_str());
+			LOG_INFO("Error generating shader code: \n", msg.c_str());
 			m_shader_indices.release(idx);
 			return INVALID_SHADER_ID;
 		}
@@ -230,7 +230,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		arc::String vertex_source;
 		if (!sources.select("vertex").get(vertex_source))
 		{
-			LOG_ERROR(tag_gl44, "Could not retrieve vertex shader code");
+			LOG_ERROR("Could not retrieve vertex shader code");
 			m_shader_indices.release(idx);
 			return INVALID_SHADER_ID;
 		}
@@ -238,7 +238,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		arc::String fragment_source;
 		if (!sources.select("fragment").get(fragment_source))
 		{
-			LOG_ERROR(tag_gl44, "Could not retrieve fragment shader code");
+			LOG_ERROR("Could not retrieve fragment shader code");
 			m_shader_indices.release(idx);
 			return INVALID_SHADER_ID;
 		}
@@ -260,7 +260,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		if (!gl::compile_shader(vert_id))
 		{
 			auto log = gl::shader_info_log(vert_id);
-			LOG_INFO(tag_gl44, "Error compiling vertex shader: \n", log.c_str());
+			LOG_INFO("Error compiling vertex shader: \n", log.c_str());
 
 			gl::delete_shader(vert_id);
 			gl::delete_shader(frag_id);
@@ -271,7 +271,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		if (!gl::compile_shader(frag_id))
 		{
 			auto log = gl::shader_info_log(frag_id);
-			LOG_INFO(tag_gl44, "Error compiling fragment shader: \n", log.c_str());
+			LOG_INFO("Error compiling fragment shader: \n", log.c_str());
 
 			gl::delete_shader(vert_id);
 			gl::delete_shader(frag_id);
@@ -379,14 +379,14 @@ namespace arc { namespace renderer { namespace gl44 {
 		if (!link_success)
 		{
 			auto log = gl::shader_info_log(vert_id);
-			LOG_INFO(tag_gl44, "Error linking shader: \n", log.c_str());
+			LOG_INFO("Error linking shader: \n", log.c_str());
 			gl::delete_program(program_id);
 			m_shader_indices.release(idx);
 			return INVALID_SHADER_ID;
 		}
 
 		m_shader_data[idx].gl_program_id = program_id;
-		LOG_INFO(tag_gl44, "Loaded shader: ", lua_file_path);
+		LOG_INFO("Loaded shader: ", lua_file_path);
 
 		return ShaderID(idx);
 	}
@@ -404,7 +404,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		bool ok = m_lua.execute_file("../../shader_framework_0.2.lua");
 		if (!ok)
 		{
-			LOG_ERROR(tag_gl44, "Could not load: ../../shader_framework_0.2.lua");
+			LOG_ERROR("Could not load: ../../shader_framework_0.2.lua");
 			return false;
 		}
 
@@ -412,7 +412,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		m_fun_load_file = m_lua.select("read_shader_config");
 		if (!m_fun_load_file.valid())
 		{
-			LOG_ERROR(tag_gl44, "Could not find lua function: read_shader_config");
+			LOG_ERROR("Could not find lua function: read_shader_config");
 			return false;
 		}
 
@@ -420,7 +420,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		m_fun_gen_code = m_lua.select("generate_source_code");
 		if (!m_fun_gen_code.valid())
 		{
-			LOG_ERROR(tag_gl44, "Could not find lua function: generate_source_code");
+			LOG_ERROR("Could not find lua function: generate_source_code");
 			return false;
 		}
 

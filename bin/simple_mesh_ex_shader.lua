@@ -18,6 +18,7 @@ vertex = {
     uniforms = {
         instance = {
             {mat4, "transform.model"},      -- model matrix
+            {mat4, "transform.view_proj"},  -- view and projection matrix
             {vec3, "instance.color"},       -- object color
         }
     },
@@ -35,11 +36,10 @@ vertex = {
         int col = _id / 10;
         int row = _id - 10*col;
 
-        vec2 pos2d = 0.1*in.position.xy;
-
-        out.projected = transform.model * vec4(pos2d,0,1);
+        out.projected = transform.view_proj * transform.model * vec4(in.position,1);
+        out.normal = vec3(transform.view_proj * transform.model * vec4(in.normal,0));
         out.color = instance.color;
-        out.normal = in.normal;
+        
     ]],
 }
 
@@ -52,7 +52,8 @@ fragment = {
 
         vec3 ambient = vec3(1,1,1);
 
-        vec3 color =  (0.05*ambient + 0.7*intensity)*in.color;
+        // (0.05*ambient + 0.7*intensity)
+        vec3 color =  0.75*in.color;
 
         float gamma = 2.2;
         color = pow(color, vec3(1.0 / gamma));

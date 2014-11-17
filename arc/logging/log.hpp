@@ -5,6 +5,8 @@
 #include "buffer_writer.hpp"
 #include "arc/collections/Slice.hpp"
 
+
+
 namespace arc { namespace log {
 
 	// Logging priorities
@@ -19,6 +21,8 @@ namespace arc { namespace log {
 	struct Message
 	{
 		uint64 thread_id;
+		uint32_t line;
+		const char* file;
 		const char* tag;
 		const char* text;
 		int priority;
@@ -58,8 +62,8 @@ namespace arc { namespace log {
 		}
 	}
 
-	template<typename TAG, typename ...Args> inline
-	void _message(int priority, Args&& ...args)
+	template<typename ...Args> inline
+	void _message(int priority, const char* tag, const char* file, int line, Args&& ...args)
 	{
 		if (global_instance == nullptr) return;
 
@@ -74,7 +78,9 @@ namespace arc { namespace log {
 
 		Message message;
 		message.thread_id = thread_id;
-		message.tag = TAG::name();
+		message.tag = tag;
+		message.line = line;
+		message.file = file;
 		message.text = writer.str();
 		message.priority = priority;
 
@@ -86,22 +92,26 @@ namespace arc { namespace log {
 
 	// API ///////////////////////////////////////////////////////////
 
-	#define LOG_VERBOSE(cat,...) \
-		{ if (arc::log::PRIORITY_VERBOSE >= cat::priority() ) log::_message<cat>(arc::log::PRIORITY_VERBOSE,__VA_ARGS__); }
+	#define ARC_CURRENT_LOG_LEVEL arc::log::PRIORITY_WARNING
+
+	#define LOG_VERBOSE(...) \
+		{ if (arc::log::PRIORITY_VERBOSE >= ARC_CURRENT_LOG_LEVEL ) log::_message(arc::log::PRIORITY_VERBOSE,nullptr,__FILE__,__LINE__,__VA_ARGS__); }
 	
-	#define LOG_DEBUG(cat,...) \
-		{ if (arc::log::PRIORITY_DEBUG >= cat::priority() ) log::_message<cat>(arc::log::PRIORITY_DEBUG,__VA_ARGS__); }
+	#define LOG_DEBUG(...) \
+		{ if (arc::log::PRIORITY_DEBUG >= ARC_CURRENT_LOG_LEVEL ) log::_message(arc::log::PRIORITY_DEBUG,nullptr,__FILE__,__LINE__,__VA_ARGS__); }
 
-	#define LOG_INFO(cat,...) \
-		{ if (arc::log::PRIORITY_INFO >= cat::priority() ) log::_message<cat>(arc::log::PRIORITY_INFO,__VA_ARGS__); }
+	#define LOG_INFO(...) \
+		{ if (arc::log::PRIORITY_INFO >= ARC_CURRENT_LOG_LEVEL ) log::_message(arc::log::PRIORITY_INFO,nullptr,__FILE__,__LINE__,__VA_ARGS__); }
 
-	#define LOG_WARNING(cat,...) \
-		{ if (arc::log::PRIORITY_WARNING >= cat::priority() ) log::_message<cat>(arc::log::PRIORITY_WARNING,__VA_ARGS__); }
+	#define LOG_WARNING(...) \
+		{ if (arc::log::PRIORITY_WARNING >= ARC_CURRENT_LOG_LEVEL ) log::_message(arc::log::PRIORITY_WARNING,nullptr,__FILE__,__LINE__,__VA_ARGS__); }
 
-	#define LOG_ERROR(cat,...) \
-		{ if (arc::log::PRIORITY_ERROR >= cat::priority() ) log::_message<cat>(arc::log::PRIORITY_ERROR,__VA_ARGS__); }
+	#define LOG_ERROR(...) \
+		{ if (arc::log::PRIORITY_ERROR >= ARC_CURRENT_LOG_LEVEL ) log::_message(arc::log::PRIORITY_ERROR,nullptr,__FILE__,__LINE__,__VA_ARGS__); }
 
-	#define LOG_CRITICAL(cat,...) \
-		{ if (arc::log::PRIORITY_CRITICAL >= cat::priority() ) log::_message<cat>(arc::log::PRIORITY_CRITICAL,__VA_ARGS__); }
+	#define LOG_CRITICAL(...) \
+		{ if (arc::log::PRIORITY_CRITICAL >= ARC_CURRENT_LOG_LEVEL ) log::_message(arc::log::PRIORITY_CRITICAL,nullptr,__FILE__,__LINE__,__VA_ARGS__); }
 
+
+	
 }}

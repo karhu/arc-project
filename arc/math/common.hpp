@@ -2,6 +2,15 @@
 
 namespace arc
 {
+	namespace math
+	{
+		const float PI = 3.14159265359f;
+		const float INV_PI = 0.31830988618f;
+	}
+}
+
+namespace arc
+{
 	template <typename T> inline
 	T min(T v1, T v2) 
 	{ 
@@ -48,4 +57,10 @@ namespace arc
 		return max(a, b);
 	}
 
+}
+
+namespace arc
+{
+	inline float deg2rad(float angle) { return  angle * math::PI * (1.0f/180.0f); }
+	inline float rad2deg(float angle) { return  angle * math::INV_PI * 180.0f;  }
 }

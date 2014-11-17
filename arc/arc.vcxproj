@@ -168,11 +168,11 @@
     <ClInclude Include="logging\log.hpp" />
     <ClInclude Include="lua\State.hpp" />
     <ClInclude Include="math\common.hpp" />
+    <ClInclude Include="math\vector_math.hpp" />
     <ClInclude Include="math\vectors.hpp" />
     <ClInclude Include="memory\Allocator.hpp" />
     <ClInclude Include="memory\LinearAllocator.hpp" />
     <ClInclude Include="memory\util.hpp" />
-    <ClInclude Include="renderer\gl44\log_tag.hpp" />
     <ClInclude Include="renderer\gl44\shader.hpp" />
     <ClInclude Include="renderer\RendererBase.hpp" />
     <ClInclude Include="renderer\RendererConfig.hpp" />

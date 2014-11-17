@@ -13,6 +13,10 @@
 #include "arc/memory/Allocator.hpp"
 #include "arc/collections/HashMap.inl"
 
+#include "arc/logging/log.hpp"
+
+#define ARC_CURRENT_LOG_LEVEL arc::log::PRIORITY_INFO
+
 namespace arc { namespace engine
 {
 
@@ -97,7 +101,7 @@ namespace arc { namespace engine
 
 		if (sdl_window == nullptr)
 		{
-			LOG_CRITICAL(engine_log, "Error initializing SDL window");
+			LOG_CRITICAL("Error initializing SDL window");
 			ARC_FAIL_GRACEFULLY();
 		}
 
@@ -106,7 +110,7 @@ namespace arc { namespace engine
 		
 		if (sdl_gl_context == nullptr)
 		{
-			LOG_CRITICAL(engine_log, "SDL OpenGL context is null: ", SDL_GetError());
+			LOG_CRITICAL("SDL OpenGL context is null: ", SDL_GetError());
 			ARC_FAIL_GRACEFULLY();
 		}
 
@@ -124,7 +128,7 @@ namespace arc { namespace engine
 		GLenum err = glewInit();
 		if (err != GLEW_OK)
 		{
-			LOG_CRITICAL(engine_log, "GLEW error: ", (const char*)glewGetErrorString(err));
+			LOG_CRITICAL("GLEW error: ", (const char*)glewGetErrorString(err));
 			ARC_FAIL_GRACEFULLY();
 		}
 	}
@@ -171,12 +175,12 @@ namespace arc { namespace engine
 		int32 bits_depthbuffer;
 		SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &bits_depthbuffer);
 
-		LOG_INFO(engine_log, "SDL OpenGL Version: ", sdl_gl_major, ".", sdl_gl_minor);
-		LOG_INFO(engine_log, "Depth Buffer Bits:  ", bits_depthbuffer);
-		LOG_INFO(engine_log, "GLEW version:       ", glewGetString(GLEW_VERSION));
+		LOG_INFO("SDL OpenGL Version: ", sdl_gl_major, ".", sdl_gl_minor);
+		LOG_INFO("Depth Buffer Bits:  ", bits_depthbuffer);
+		LOG_INFO("GLEW version:       ", glewGetString(GLEW_VERSION));
 
-		LOG_INFO(engine_log, "OpenGL renderer :   ", glGetString(GL_RENDERER));
-		LOG_INFO(engine_log, "OpenGL version:     ", glGetString(GL_VERSION));
+		LOG_INFO("OpenGL renderer :   ", glGetString(GL_RENDERER));
+		LOG_INFO("OpenGL version:     ", glGetString(GL_VERSION));
 
 
 		_check_opengl_extensions();
@@ -271,11 +275,11 @@ namespace arc { namespace engine
 			m_initialized = initialize(config);
 			if (!m_initialized)
 			{
-				LOG_CRITICAL(engine_log, "Could not initialize subsystem: ", name());
+				LOG_CRITICAL("Could not initialize subsystem: ", name());
 			}
 			else
 			{
-				LOG_INFO(engine_log, "Subsystem initialized: ", name());
+				LOG_INFO("Subsystem initialized: ", name());
 			}
 		}
 		return m_initialized;
@@ -288,11 +292,11 @@ namespace arc { namespace engine
 			m_finalized = finalize();
 			if (!m_finalized)
 			{
-				LOG_CRITICAL(engine_log, "Could not finalize subsystem: ", name());
+				LOG_CRITICAL("Could not finalize subsystem: ", name());
 			}
 			else
 			{
-				LOG_INFO(engine_log, "Subsystem finalized: ", name());
+				LOG_INFO("Subsystem finalized: ", name());
 			}
 		}
 		return m_finalized;

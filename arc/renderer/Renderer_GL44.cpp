@@ -10,12 +10,6 @@
 
 namespace arc { namespace renderer {
 
-	struct tag_gl44
-	{
-		static const char* name() { return "Renderer_GL44"; }
-		static int priority() { return log::PRIORITY_INFO; }
-	};
-
 	union SortKey_GL44
 	{
 		struct
@@ -166,7 +160,7 @@ namespace arc { namespace renderer {
 		bool success = m_shader_backend.initialize(config);
 		if (!success)
 		{
-			LOG_ERROR(tag_gl44, "Error initializing shader backend.");
+			LOG_ERROR("Error initializing shader backend.");
 			return false;
 		}
 
@@ -526,7 +520,7 @@ namespace arc { namespace renderer {
 				auto vl_att_ptr = gcd.layout->find_attribute(sh_att.name); // TODO: faster?
 				if (vl_att_ptr == nullptr)
 				{
-					LOG_WARNING(tag_gl44, "unmapped shader vertex property");
+					LOG_WARNING("unmapped shader vertex property");
 					gl::disable_vertex_attribute(sh_att.location);
 					continue;
 				}
@@ -632,7 +626,7 @@ namespace arc { namespace renderer {
 		{
 			if (i >= dib_data.size())
 			{
-				LOG_ERROR(tag_gl44, "Render command limit reached");
+				LOG_ERROR("Render command limit reached");
 				break;
 			}
 

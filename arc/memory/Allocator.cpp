@@ -1,17 +1,12 @@
 #include "Allocator.hpp"
 
 #include "arc/core.hpp"
-#include "arc/logging/log.hpp"
 #include "arc/core/numeric_types.hpp"
+
+#include "arc/logging/log.hpp"
 
 #include <cstdlib>
 #include <iostream>
-
-struct malloc_log
-{
-	static const char* name() { return "malloc"; }
-	static int priority() { return arc::log::PRIORITY_WARNING;  }
-};
 
 namespace arc { namespace memory {
 
@@ -21,14 +16,14 @@ namespace arc { namespace memory {
     {
         //TODO handle alignment
         auto ptr = std::malloc((size_t)size);
-		LOG_DEBUG(malloc_log, ptr, " = allocate(", size, ",", align, ")");
+		LOG_DEBUG(ptr, " = allocate(", size, ",", align, ")");
         return ptr;
     }
 
     void Mallocator::free(void *data)
     {
         //TODO handle alignment
-		LOG_DEBUG(malloc_log, "free(", data, ")");
+		LOG_DEBUG("free(", data, ")");
         std::free(data);
     }
 

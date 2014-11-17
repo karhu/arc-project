@@ -33,27 +33,6 @@ renderer::VertexLayout& ExampleVertexData::Layout()
 	return layout;
 }
 
-struct Camera
-{
-	mat4 compute_view_matrix()
-	{
-
-	}
-
-	void translate_global(const vec3& delta)
-	{
-		m_world_pos += delta;
-	}
-
-	void translate_local(const vec3& delta)
-	{
-
-	}
-	vec3 m_world_pos;
-	
-	mat4 m_view_matrix;
-};
-
 inline void renderer_example()
 {
 	using namespace arc::renderer;
