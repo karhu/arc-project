@@ -51,6 +51,17 @@ namespace arc { namespace gl {
         ShaderStorage = GL_SHADER_STORAGE_BUFFER,
     };
 
+	enum class TextureTarget : GLenum
+	{
+		Texture1D = GL_TEXTURE_1D,
+		Texture2D = GL_TEXTURE_2D,
+	};
+
+	enum class InternalTextureFormat : GLenum
+	{
+
+	};
+
     enum class BufferAccess : GLbitfield
     {
         Read = GL_MAP_READ_BIT,

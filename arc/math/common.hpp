@@ -11,8 +11,8 @@ namespace arc
 
 namespace arc
 {
-	template <typename T> inline
-	T min(T v1, T v2) 
+	template <typename T, typename U> inline
+	T min(T v1, U v2) 
 	{ 
 		return v1 < v2 ? v1 : v2; 
 	}
@@ -36,8 +36,8 @@ namespace arc
 
 namespace arc
 {
-	template <typename T> inline
-	T max(T v1, T v2) 
+	template <typename T, typename U> inline
+	T max(T v1, U v2) 
 	{ 
 		return v1 > v2 ? v1 : v2; 
 	}

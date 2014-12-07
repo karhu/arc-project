@@ -55,18 +55,18 @@ namespace arc { namespace renderer {
 
 	/*static*/ bool Renderer_GL44::Validate(const Config& config)
 	{
-		if (config.longterm_allocator == nullptr) return false;
 		return true;
 	}
 
-	Renderer_GL44::Renderer_GL44(const Config& config)
-		: m_alloc(config.longterm_allocator)
-		, m_frame_alloc(config.longterm_allocator, config.frame_allocator_size)
+	Renderer_GL44::Renderer_GL44(const Config& config, const AllocatorConfig& allocator_config)
+		: m_alloc(allocator_config.longterm_allocator)
+		, m_frame_alloc(allocator_config.longterm_allocator, config.frame_allocator_size)
 		, m_submitted_render_buckets(*m_alloc)
 		, m_geometry_config_data(m_alloc, 16, 16, 128)
 		, m_vertex_layouts(*m_alloc)
+		, m_texture_backend(config,allocator_config)
 	{
-		initialize(config);
+		initialize(config,allocator_config);
 	}
 
 	Renderer_GL44::~Renderer_GL44()
@@ -74,12 +74,12 @@ namespace arc { namespace renderer {
 		finalize();
 	}
 
-	bool Renderer_GL44::initialize(const Config& config)
+	bool Renderer_GL44::initialize(const Config& config, const AllocatorConfig& allocator_config)
 	{
 		gl::gen_buffers(1, &m_gl_dib);
 		auto target = gl::BufferType::DrawIndirect;
 		gl::bind_buffer(target, m_gl_dib);
-		uint32 draw_commands_size = 2048*sizeof(gl::DrawElementsIndirectCommand);
+		uint32 draw_commands_size = 8*1024*sizeof(gl::DrawElementsIndirectCommand); // TODO handle more draw calls
 		gl::buffer_storage(target, draw_commands_size, 0,
 			gl::BufferStorage::Write |
 			gl::BufferStorage::Persistent |
@@ -131,7 +131,7 @@ namespace arc { namespace renderer {
 
 			// init index pool
 			m_geometry_indices.initialize(
-				config.longterm_allocator,
+				allocator_config.longterm_allocator,
 				last_id_before_increment,
 				id_size_increment,
 				40000000,
@@ -142,7 +142,7 @@ namespace arc { namespace renderer {
 			);
 
 			// init data store
-			m_geometry_data.initialize(config.longterm_allocator, 0);
+			m_geometry_data.initialize(allocator_config.longterm_allocator, 0);
 			GeometryData gd; gd.block_size = 0;
 			m_geometry_data.resize(1 + last_id_before_increment, gd);
 		}
@@ -157,7 +157,7 @@ namespace arc { namespace renderer {
 		}
 
 		// shader /////////////////////////////////////////////
-		bool success = m_shader_backend.initialize(config);
+		bool success = m_shader_backend.initialize(config,allocator_config);
 		if (!success)
 		{
 			LOG_ERROR("Error initializing shader backend.");
@@ -597,6 +597,9 @@ namespace arc { namespace renderer {
 
 	void Renderer_GL44::update_frame_end()
 	{
+		// if there was nothing submitted, do early return
+		if (m_submitted_render_buckets.size() == 0) return;
+
 		//TODO merge sort
 		auto m_render_command_data = m_submitted_render_buckets.back()->m_commands;
 		uint32 m_render_command_count = m_submitted_render_buckets.back()->m_count;
@@ -645,7 +648,7 @@ namespace arc { namespace renderer {
 					_gl_primitive_type(current.primitive_type),
 					_gl_index_type(current.index_type),
 					sizeof(gl::DrawElementsIndirectCommand)*dib_begin,
-					batch_size, // number of draw commands that are dispatched
+					128, // number of draw commands that are dispatched
 					sizeof(gl::DrawElementsIndirectCommand)
 					);
 				m_shader_backend.m_iu_submission.batch_post_flush(batch_size);

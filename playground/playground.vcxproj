@@ -162,13 +162,14 @@
     <ClInclude Include="component\TransformComponent.hpp" />
     <ClInclude Include="engine.hpp" />
     <ClInclude Include="engine\CallbackManager.hpp" />
+    <ClInclude Include="engine\SimpleMainLoop.hpp" />
     <ClInclude Include="entity\SimpleComponent.hpp" />
     <ClInclude Include="entity\entity.hpp" />
     <ClInclude Include="example\example.hpp" />
     <ClInclude Include="example\renderer_ex.hpp" />
-    <ClInclude Include="example\simple_mesh_ex.cpp" />
     <ClInclude Include="input\KeyboardState.hpp" />
     <ClInclude Include="input\Keys.hpp" />
+    <ClInclude Include="renderer\test.hpp" />
     <ClInclude Include="state.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Struct.hpp" />
@@ -180,6 +181,8 @@
     <ClCompile Include="engine\CallbackManager.cpp" />
     <ClCompile Include="entity\entity.cpp" />
     <ClCompile Include="example\entity_ex.cpp" />
+    <ClCompile Include="example\simple_mesh_example.cpp" />
+    <ClCompile Include="example\texture_example.cpp" />
     <ClCompile Include="input\KeyboardState.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="state.cpp" />

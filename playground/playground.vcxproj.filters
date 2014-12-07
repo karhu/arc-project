@@ -60,7 +60,10 @@
     <ClInclude Include="engine\CallbackManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="example\simple_mesh_ex.cpp">
+    <ClInclude Include="renderer\test.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\SimpleMainLoop.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -90,6 +93,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="engine\CallbackManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="example\simple_mesh_example.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="example\texture_example.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

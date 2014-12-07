@@ -92,7 +92,7 @@ namespace arc { namespace log {
 
 	// API ///////////////////////////////////////////////////////////
 
-	#define ARC_CURRENT_LOG_LEVEL arc::log::PRIORITY_WARNING
+	#define ARC_CURRENT_LOG_LEVEL arc::log::PRIORITY_INFO
 
 	#define LOG_VERBOSE(...) \
 		{ if (arc::log::PRIORITY_VERBOSE >= ARC_CURRENT_LOG_LEVEL ) log::_message(arc::log::PRIORITY_VERBOSE,nullptr,__FILE__,__LINE__,__VA_ARGS__); }

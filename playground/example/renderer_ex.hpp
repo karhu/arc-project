@@ -49,12 +49,14 @@ inline void renderer_example()
 	
 	// renderer configuration
 	renderer::Config config;
-	config.longterm_allocator = &longterm_alloc;
+
+	renderer::AllocatorConfig alloc_config;
+	alloc_config.longterm_allocator = &longterm_alloc;
 
 	// initialize renderer
 	bool ok = Renderer_GL44::Validate(config);
 	_CHECK(ok, "invalid renderer config");
-	Renderer_GL44 renderer_gl44(config);
+	Renderer_GL44 renderer_gl44(config, alloc_config);
 	
 	auto& r = renderer_gl44;
 	
@@ -99,7 +101,7 @@ inline void renderer_example()
 	}
 
 	// create shader
-	id_shader = r.shader_create("../../shader.lua");
+	id_shader = r.shader_create("../../../resources/renderer_ex/shader.lua");
 	_CHECK(id_shader != INVALID_SHADER_ID, "invalid ShaderID");
 
 
@@ -130,6 +132,7 @@ inline void renderer_example()
 		_CHECK(color_offset != -1, "shader_get_uniform_offset unsuccessful");
 
 		vec3 colors[] = {
+			vec3(0.6f, 0.9f, 0.3f),
 			vec3(0.07f, 0.32f, 0.79f),
 			vec3(0.32f, 0.79f, 0.07f),
 			vec3(0.79f, 0.07f, 0.32f),

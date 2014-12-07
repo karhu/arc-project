@@ -80,6 +80,18 @@ namespace arc { namespace renderer {
 		uvec2_t,
 		uvec3_t,
 		uvec4_t,
+
+		fsampler1D_t = 12,
+		fsampler2D_t = 13,
+		fsampler3D_t = 14,
+
+		uisampler1D_t = 15,
+		uisampler2D_t = 16,
+		uisampler3D_t = 17,
+
+		isampler1D_t = 18,
+		isampler2D_t = 19,
+		isampler3D_t = 20,
 	};
 
 	enum class ShaderUniformType : uint8

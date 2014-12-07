@@ -12,6 +12,7 @@
 namespace arc { namespace renderer { 
 	
 	struct Config;
+	struct AllocatorConfig;
 	
 namespace gl44 {
 
@@ -72,7 +73,7 @@ namespace gl44 {
 		void set_shader(const ShaderDescription& shader);
 		void batch_enqueue(uint32 index, void* data);
 	public:
-		bool initialize(const Config& config);
+		bool initialize(const Config& config, const AllocatorConfig& allocator_config);
 		bool finalize();
 	private:
 		struct BlockState
@@ -120,7 +121,7 @@ namespace gl44 {
 	class ShaderBackend
 	{
 	public:
-		bool initialize(const Config& config);
+		bool initialize(const Config& config, const AllocatorConfig& allocator_config);
 		bool finalize();
 	public:
 		ShaderID create_shader(StringView lua_file_path);

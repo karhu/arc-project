@@ -83,8 +83,8 @@ namespace arc { namespace io {
 	inline uint32_t vertex_data_end(const PartHeader& ph) { return vertex_data_begin(ph) + vertex_stride(ph)*ph.vertex_count; }
 	inline uint32_t vertex_data_size(const PartHeader& ph) { return vertex_stride(ph)*ph.vertex_count; }
 
-	/* Simple mesh loading routine.
-	 Loads a SimpleMesh from an input stream and creates a new gpu geometry for each part found. 
-     Calls the callback function for every geometry created this way. */
+	/** Simple mesh loading routine.
+	 * Loads a SimpleMesh from an input stream and creates a new gpu geometry for each part found. 
+     * Calls the callback function for every geometry created this way. */
 	bool load_simple_mesh_to_gpu(renderer::RendererBase& renderer, BinaryReadStream& in, std::function<void(renderer::GeometryID)> cb);
 }}

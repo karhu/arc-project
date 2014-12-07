@@ -8,6 +8,7 @@
 #include "RendererBase.hpp"
 
 #include "gl44/shader.hpp"
+#include "gl44/texture.hpp"
 
 namespace arc { namespace renderer {
 
@@ -49,10 +50,10 @@ namespace arc { namespace renderer {
 	public:
 		static bool Validate(const Config& config);
 	public:
-		Renderer_GL44(const Config& config);
+		Renderer_GL44(const Config& config, const AllocatorConfig& allocator_config);
 		~Renderer_GL44() override;
 	private:
-		bool initialize(const Config& config);
+		bool initialize(const Config& config, const AllocatorConfig& allocator_config);
 		void finalize();
 	public:
 		StringHash64 type_hash() override;
@@ -83,9 +84,13 @@ namespace arc { namespace renderer {
 		ShaderID shader_create(StringView lua_file_path) override;
 		//void shader_destroy(ShaderID id) override;
 		int32 shader_get_uniform_offset(ShaderID shader, ShaderUniformType uniform_type, ShaderPrimitiveType type, StringHash32 name) override;
+	public:
+		inline gl44::TextureManager& texture_manager() { return m_texture_backend; }
 	private:
 		memory::Allocator* m_alloc;
 		memory::LinearAllocator m_frame_alloc;
+	private:
+		gl44::TextureManager m_texture_backend;
 	private:
 		bool m_is_initialized = false;
 	private:

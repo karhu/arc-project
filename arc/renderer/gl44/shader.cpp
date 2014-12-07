@@ -169,12 +169,12 @@ namespace arc { namespace renderer { namespace gl44 {
 		}
 	}
 
-	bool InstanceUniformSubmission::initialize(const Config& config)
+	bool InstanceUniformSubmission::initialize(const Config& config, const AllocatorConfig& allocator_config)
 	{
 		if (m_available_buffers.is_initialized()) return true;
 
-		m_available_buffers.initialize(config.longterm_allocator);
-		m_used_buffers.initialize(config.longterm_allocator);
+		m_available_buffers.initialize(allocator_config.longterm_allocator);
+		m_used_buffers.initialize(allocator_config.longterm_allocator);
 		m_block_count = 0;
 		m_current_buffer.data = nullptr;
 
@@ -315,26 +315,32 @@ namespace arc { namespace renderer { namespace gl44 {
 		}
 		sd.vertex_attributes_count = next_location;
 
-		uint8 type_size[] = {
+		static const uint8 type_size[] = {
 			0,
 			4, 8, 12, 16,
 			16, 36, 64,
 			4, 8, 12, 16,
+			8, 8, 8, // fsampler
+			8, 8, 8, // uisampler
+			8, 8, 8, // usampler
 		};
 
-		uint8 type_stride[] = {
+		static const uint8 type_stride[] = {
 			0,
 			16, 16, 16, 16,
 			16, 36, 64,
 			16, 16, 16, 16,
+			16, 16, 16, // fsampler
+			16, 16, 16, // uisampler
+			16, 16, 16, // usampler
 		};
 
 		// instance uniforms
-		auto inst_uniforms = config.select("vertex").select("uniforms").select("instance");
 		uint32 i = 0;
 		uint32 draw_data_offset = 0;
 		uint32 max_block_stride = 0;
-		for (auto& v : lua::each_value(inst_uniforms))
+		auto vert_inst_uniforms = config.select("vertex").select("uniforms").select("instance");
+		for (auto& v : lua::each_value(vert_inst_uniforms))
 		{
 			String name;
 			int32 binding;
@@ -356,7 +362,37 @@ namespace arc { namespace renderer { namespace gl44 {
 			max_block_stride = max(max_block_stride, stride);
 
 			iu.block = i;
-			iu.block_offset = 0;
+			iu.block_offset = 0; // Right now each uniform has its own block. Therefore within that block its offset is 0.
+			iu.name = string_hash32(name);
+			iu.type = static_cast<ShaderPrimitiveType>(type);
+
+			i += 1;
+			// TODO bounds check agains MAX_...
+		}
+		auto frag_inst_uniforms = config.select("fragment").select("uniforms").select("instance");
+		for (auto& v : lua::each_value(frag_inst_uniforms))
+		{
+			String name;
+			int32 binding;
+			int32 type;
+
+			auto& iub = sd.instance_uniform_blocks[i];
+			auto& iu = sd.instance_uniforms[i];
+
+			v.select("var_name").get(name);
+			v.select("binding").get(binding);
+			v.select("type").get(type);
+			uint32 stride = type_stride[type];
+
+			iub.binding = binding;
+			iub.stride = stride;
+			iub.draw_data_offset = draw_data_offset;
+			draw_data_offset += stride;
+
+			max_block_stride = max(max_block_stride, stride);
+
+			iu.block = i;
+			iu.block_offset = 0; // Right now each uniform has its own block. Therefore within that block its offset is 0.
 			iu.name = string_hash32(name);
 			iu.type = static_cast<ShaderPrimitiveType>(type);
 
@@ -368,6 +404,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		sd.instance_uniform_draw_data_size = draw_data_offset;
 
 		sd.maximum_batch_size = m_max_uniform_buffer_size / max_block_stride;
+		sd.maximum_batch_size = arc::min(sd.maximum_batch_size, 128); // somehow I get errors with batch sizes > 128
 
 		// link shader
 		bool link_success = gl::link_program(program_id);
@@ -391,7 +428,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		return ShaderID(idx);
 	}
 
-	bool ShaderBackend::initialize(const Config& config)
+	bool ShaderBackend::initialize(const Config& config, const AllocatorConfig& allocator_config)
 	{
 		uint32 last_id_before_increment = 16;
 		uint32 id_size_increment = 16;
@@ -401,10 +438,10 @@ namespace arc { namespace renderer { namespace gl44 {
 		m_lua.open_standard_libs();
 
 		// load custom lua library
-		bool ok = m_lua.execute_file("../../shader_framework_0.2.lua");
+		bool ok = m_lua.execute_file("../../../resources/shader_framework_0.2.lua");
 		if (!ok)
 		{
-			LOG_ERROR("Could not load: ../../shader_framework_0.2.lua");
+			LOG_ERROR("Could not load: resources/shader_framework_0.2.lua");
 			return false;
 		}
 
@@ -425,7 +462,7 @@ namespace arc { namespace renderer { namespace gl44 {
 		}
 
 		m_shader_indices.initialize(
-			config.longterm_allocator,
+			allocator_config.longterm_allocator,
 			last_id_before_increment,
 			id_size_increment,
 			10000,
@@ -436,11 +473,11 @@ namespace arc { namespace renderer { namespace gl44 {
 		}
 		);
 
-		m_shader_data.initialize(config.longterm_allocator);
+		m_shader_data.initialize(allocator_config.longterm_allocator);
 		ShaderDescription sd;
 		m_shader_data.resize(1 + last_id_before_increment, sd);
 
-		auto success = m_iu_submission.initialize(config);
+		auto success = m_iu_submission.initialize(config,allocator_config);
 
 		return success;
 	}
@@ -460,8 +497,10 @@ namespace arc { namespace renderer { namespace gl44 {
 		ARC_ASSERT(m_shader_indices.valid(shader_id.value()), "Invalid ShaderID");
 		auto& sd = m_shader_data[shader_id.value()];
 
+		// right now we only support instanced uniforms
 		if (uniform_type == ShaderUniformType::Instanced)
 		{
+			// iterate over all instance uniforms, looking for one with fitting name and type
 			for (uint32 i = 0; i < sd.instance_uniforms_count; i++)
 			{
 				auto& u = sd.instance_uniforms[i];

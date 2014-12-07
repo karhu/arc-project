@@ -49,10 +49,22 @@ namespace arc
     }
 
     template<typename T> inline
-    ARC_CONSTEXPR const Slice<T> make_slice(const T* data, uint64 size)
+		ARC_CONSTEXPR const Slice<T> make_slice(const T* begin, const T* end)
     {
-        return Slice<T>(const_cast<T*>(data),size);
+		return Slice<T>(const_cast<T*>(begin), end - begin);
     }
+
+	template<typename T> inline
+		ARC_CONSTEXPR Slice<T> make_slice(T* begin, T* end)
+	{
+		return Slice<T>(begin, end - begin);
+	}
+
+	template<typename T> inline
+		ARC_CONSTEXPR const Slice<T> make_slice(const T* data, uint64 size)
+	{
+		return Slice<T>(const_cast<T*>(data), size);
+	}
 
     template<typename T> inline
     T& Slice<T>::operator[] (uint64 idx)

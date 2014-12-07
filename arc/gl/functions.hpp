@@ -410,7 +410,7 @@ inline void multi_draw_elements_indirect(Primitive primitive, IndexType index_ty
                                          uint32 draw_count, uint32 byte_stride)
 {
     ARC_GL_CLEAR_ERRORS();
-    glMultiDrawElementsIndirectAMD((GLenum)primitive, (GLenum)index_type, (void*)byte_offset,
+    glMultiDrawElementsIndirect((GLenum)primitive, (GLenum)index_type, (void*)byte_offset,
                                 draw_count, byte_stride);
     ARC_GL_CHECK_FOR_ERRORS();
 }
@@ -440,6 +440,81 @@ inline WaitSyncResult client_wait_sync(GLsync sync, WaitSyncFlags flags, uint64 
     auto r = glClientWaitSync(sync,(GLbitfield)flags,timeout_ns);
     ARC_GL_CHECK_FOR_ERRORS();
     return (WaitSyncResult) r;
+}
+
+///////////////////////////////////////////////////////////////
+// textures                                                  //
+///////////////////////////////////////////////////////////////
+
+inline void gen_textures(Slice<uint32_t> out_ids)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glGenTextures((GLsizei)out_ids.size(), out_ids.ptr());
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline void delete_textures(Slice<uint32_t> in_ids)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glDeleteTextures((GLsizei)in_ids.size(), in_ids.ptr());
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline void bind_texture(TextureTarget target, uint32_t texture_id)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glBindTexture((GLenum)target, texture_id);
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline void tex_storage_1d(TextureTarget target, int32_t levels, uint32_t format, uint32_t width)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glTexStorage1D((GLenum)target, levels, (GLenum)format, width);
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline void tex_storage_2d(TextureTarget target, int32_t levels, uint32_t format, uint32_t width, uint32_t height)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glTexStorage2D((GLenum)target, levels, (GLenum)format, width, height);
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline void tex_sub_image_1d(TextureTarget target, int32_t level, uint32_t x_offset, uint32_t x_count, uint32_t format, uint32_t type, const void* data)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glTexSubImage1D((GLenum)target, level, x_offset, x_count, (GLenum)format, (GLenum)type, data);
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline void tex_sub_image_2d(TextureTarget target, int32_t level, uint32_t x_offset, uint32_t y_offset, uint32_t x_count, uint32_t y_count, uint32_t format, uint32_t type, const void* data)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glTexSubImage2D((GLenum)target, level, x_offset, y_offset, x_count, y_count, (GLenum)format, (GLenum)type, data);
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline uint64_t get_texture_handle(uint32_t tex_id)
+{
+	ARC_GL_CLEAR_ERRORS();
+	uint64_t result = glGetTextureHandleARB(tex_id);
+	ARC_GL_CHECK_FOR_ERRORS();
+	return result;
+}
+
+inline void make_texture_handle_resident(uint64_t handle)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glMakeTextureHandleResidentARB(handle);
+	ARC_GL_CHECK_FOR_ERRORS();
+}
+
+inline void make_texture_handle_non_resident(uint64_t handle)
+{
+	ARC_GL_CLEAR_ERRORS();
+	glMakeTextureHandleNonResidentARB(handle);
+	ARC_GL_CHECK_FOR_ERRORS();
 }
 
 ///////////////////////////////////////////////////////////////

@@ -150,6 +150,12 @@
     <ClInclude Include="math\vector_math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="renderer\gl44\texture.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\gl44\texture_enums.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\assert.cpp">
@@ -198,6 +204,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="io\SimpleMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\gl44\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
